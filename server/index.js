@@ -14,7 +14,6 @@ const db = mysql.createPool({
     password: 'password',
     database: 'list_to_do_db',
 });
-
 db.getConnection((err, connection) => {
     if (err) {
         console.error('Error connecting to database:', err);
@@ -23,7 +22,6 @@ db.getConnection((err, connection) => {
     console.log('Connected to database!');
     connection.release();
 });
-
 app.use(express.json());
 app.use(cors({
     origin: ["http://localhost:3000"],
@@ -31,18 +29,27 @@ app.use(cors({
     credentials: true
 }));
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({extended: true}));
-
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
     key: "userId",
     secret: "suscribe",
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     cookie: {
         expires: 60 * 60 * 24 * 1000,
     }
-}))
-
+}));
+function dbQuery(sql, params) {
+    return new Promise((resolve, reject) => {
+        db.query(sql, params, (error, result) => {
+            if (error) {
+                reject(error);
+                return;
+            }
+            resolve(result);
+        });
+    });
+};
 app.post('/api/login', async (req, res) => {
     const { userName, password } = req.body;
     const sqlSelect = 'SELECT * FROM users WHERE name = ?';
@@ -58,6 +65,7 @@ app.post('/api/login', async (req, res) => {
                     name: user.name,
                 };
                 req.session.user = userData;
+                // req.session.save();
                 res.send(userData);
             } else {
                 res.status(401).send('Invalid username or password');
@@ -70,36 +78,34 @@ app.post('/api/login', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
-
-function dbQuery(sql, params) {
-    return new Promise((resolve, reject) => {
-        db.query(sql, params, (error, result) => {
-            if (error) {
-                reject(error);
-                return;
-            }
-            resolve(result);
-        });
-    });
-};
 app.post('/api/insertTask', async (req, res) => {
-    const { priority, description, taskName } = req.body;
+    const { status, priority, description, taskName } = req.body;
     const idUser = req.session.user.id_user;
-    const status = 'Pendiente';
     const insertTask = 'INSERT INTO tasks (status, priority, id_user, description_task, task_name) VALUES (?, ?, ?, ?, ?)';
     try {
         const result = await dbQuery(insertTask, [status, priority, idUser, description, taskName]);
-        console.log(result)
-        // req.send(result);
-    } catch(error) {
+        res.send(result);
+    } catch (error) {
         console.log(error);
     }
-
-})
+});
+app.post('/api/updateTask', async (req, res) => {
+    const { idUser, idTask, status, priority, description, taskName } = req.body;
+    // const idUser = req.session.user.id_user;
+    const updateTask = `UPDATE tasks t SET status = ?, priority = ?, description_task = ?, task_name = ? \
+        WHERE id_task = ? AND id_user = ?`;
+    try {
+        const result = await dbQuery(updateTask, [status, priority, description, taskName, idTask, idUser]);
+        res.send(result);
+    } catch (error) {
+        console.log(error);
+        res.send(error);
+    }
+});
 app.get('/api/getUser', (req, res) => {
     const idUser = req.session.user.id_user;
     console.log(req.session.user)
-    const sqlSelectedUser = `SELECT u.name, u.updated_at, ( SELECT GROUP_CONCAT(t.task_name SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
+    const sqlSelectedUser = `SELECT u.id_user, u.name, u.updated_at, ( SELECT GROUP_CONCAT(t.task_name SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
     AS task_names, ( SELECT GROUP_CONCAT(t.id_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user) AS id_tasks,\
     ( SELECT GROUP_CONCAT(t.description_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
     AS task_descriptions, ( SELECT GROUP_CONCAT(t.created_at SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
@@ -116,7 +122,6 @@ app.get('/api/getUser', (req, res) => {
         res.send(result);
     });
 });
-
 app.post('/api/signup', async (req, res) => {
     const { userName, password, passwordConfirm, userEmail } = req.body;
 
@@ -150,13 +155,6 @@ app.post('/api/signup', async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
-
-
-
-
-
-
-
 app.listen(3001, () => {
     console.log('Running on port 3001');
 });
