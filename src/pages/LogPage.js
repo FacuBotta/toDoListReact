@@ -10,17 +10,15 @@ const LogPage = () => {
     const [newUserPassword, setNewUserPassword] = useState('');
     const [newUserPasswordConfirm, setNewUserPasswordConfirm] = useState('');
     const navigate = useNavigate();
-    axios.defaults.withCredentials = true;
 
     const handleLogin = async (e) => {
         e.preventDefault();
-
         try {
             const response = await axios.post('http://localhost:3001/api/login', {
                 userName: loginUserName,
                 password: loginPassword,
-            });
-            console.log(response.data)
+            }, {withCredentials: true});
+            // console.log(response.data)
             navigate('/User-home');
         } catch (error) {
             console.error(error);
@@ -29,20 +27,15 @@ const LogPage = () => {
 
     const handleSignUp = async (e) => {
         e.preventDefault();
-
         try {
-            // Realizar la solicitud POST para registrar un nuevo usuario
             const response = await axios.post('http://localhost:3001/api/signup', {
                 userName: newUserName,
                 password: newUserPassword,
                 passwordConfirm: newUserPasswordConfirm,
                 userEmail: newUserEmail,
             });
-
-            // Manejar la respuesta del servidor
             console.log(response.data);
             // navigate('/User-home', { state: response.data[0].id_user });
-
         } catch (error) {
             console.error(error);
         }

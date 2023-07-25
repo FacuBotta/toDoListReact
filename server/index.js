@@ -6,14 +6,18 @@ const saltRounds = 10;
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const session = require('express-session');
+var session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 
-const db = mysql.createPool({
+const options = {
     host: 'localhost',
     user: 'root',
     password: 'password',
     database: 'list_to_do_db',
-});
+}
+const db = mysql.createPool(options);
+const sessionStore = new MySQLStore(options);
+
 db.getConnection((err, connection) => {
     if (err) {
         console.error('Error connecting to database:', err);
@@ -24,20 +28,18 @@ db.getConnection((err, connection) => {
 });
 app.use(express.json());
 app.use(cors({
-    origin: ["http://localhost:3000"],
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
 }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
     key: "userId",
     secret: "suscribe",
-    resave: true,
-    saveUninitialized: true,
-    cookie: {
-        expires: 60 * 60 * 24 * 1000,
-    }
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
 }));
 function dbQuery(sql, params) {
     return new Promise((resolve, reject) => {
@@ -53,20 +55,15 @@ function dbQuery(sql, params) {
 app.post('/api/login', async (req, res) => {
     const { userName, password } = req.body;
     const sqlSelect = 'SELECT * FROM users WHERE name = ?';
-
     try {
         const result = await dbQuery(sqlSelect, [userName]);
         if (result.length > 0) {
             const user = result[0];
             const match = await bcrypt.compare(password, user.password);
             if (match) {
-                const userData = {
-                    id_user: user.id_user,
-                    name: user.name,
-                };
-                req.session.user = userData;
-                // req.session.save();
-                res.send(userData);
+                req.session.user = user.name;
+                req.session.userId = user.id_user;
+                res.send(req.session);
             } else {
                 res.status(401).send('Invalid username or password');
             }
@@ -78,50 +75,70 @@ app.post('/api/login', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
-app.post('/api/insertTask', async (req, res) => {
-    const { status, priority, description, taskName } = req.body;
-    const idUser = req.session.user.id_user;
-    const insertTask = 'INSERT INTO tasks (status, priority, id_user, description_task, task_name) VALUES (?, ?, ?, ?, ?)';
-    try {
-        const result = await dbQuery(insertTask, [status, priority, idUser, description, taskName]);
-        res.send(result);
-    } catch (error) {
-        console.log(error);
-    }
-});
-app.post('/api/updateTask', async (req, res) => {
-    const { idUser, idTask, status, priority, description, taskName } = req.body;
-    // const idUser = req.session.user.id_user;
-    const updateTask = `UPDATE tasks t SET status = ?, priority = ?, description_task = ?, task_name = ? \
-        WHERE id_task = ? AND id_user = ?`;
-    try {
-        const result = await dbQuery(updateTask, [status, priority, description, taskName, idTask, idUser]);
-        res.send(result);
-    } catch (error) {
-        console.log(error);
-        res.send(error);
-    }
-});
-app.get('/api/getUser', (req, res) => {
-    const idUser = req.session.user.id_user;
-    console.log(req.session.user)
-    const sqlSelectedUser = `SELECT u.id_user, u.name, u.updated_at, ( SELECT GROUP_CONCAT(t.task_name SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
-    AS task_names, ( SELECT GROUP_CONCAT(t.id_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user) AS id_tasks,\
+app.post('/api/getUser', (req, res) => {
+        const idUser = req.session.userId;
+        const sqlSelectedUser = `SELECT u.id_user, u.name, u.updated_at, ( SELECT GROUP_CONCAT(t.task_name SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
+    AS task_names, ( SELECT GROUP_CONCAT(t.order_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user) AS order_tasks,\
+    ( SELECT GROUP_CONCAT(t.id_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user) AS id_tasks,\
     ( SELECT GROUP_CONCAT(t.description_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
     AS task_descriptions, ( SELECT GROUP_CONCAT(t.created_at SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
     AS task_created_at, ( SELECT GROUP_CONCAT(t.status SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
     AS task_status, ( SELECT GROUP_CONCAT(t.priority SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
     AS task_priority, ( SELECT GROUP_CONCAT(t.updated_at SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
     AS task_updated_at FROM users u WHERE u.id_user = 1;`;
-    db.query(sqlSelectedUser, [idUser], (err, result) => {
-        if (err) {
-            res.status(500).send('Internal server error');
-            return;
-        }
-
-        res.send(result);
-    });
+        db.query(sqlSelectedUser, [idUser], (err, result) => {
+            if (err) {
+                res.status(500).send('Internal server error');
+                return;
+            }
+            res.send(result);
+        });
 });
+app.post('/api/insertTask', async (req, res) => {
+    const { status, priority, description, taskName, order } = req.body;
+    const idUser = req.session.userId;
+    console.log(req.session)
+    const insertTask = 'INSERT INTO tasks (status, priority, id_user, description_task, task_name, order_task) VALUES (?, ?, ?, ?, ?, ?)';
+    try {
+        const result = await dbQuery(insertTask, [status, priority, idUser, description, taskName, order]);
+        res.send(result);
+    } catch (error) {
+        console.log(error);
+    }
+});
+app.post('/api/updateTaskDrag', async (req, res) => {
+    const { tasks } = req.body;
+    const updateTask = `UPDATE tasks t SET status = ?, order_task = ? WHERE id_user = ? && id_task = ?`;
+    try {
+        for (const task of tasks) {
+            const result = await dbQuery(updateTask, [
+                task.status,
+                task.order_task,
+                task.id_user,
+                task.id_task,
+            ]);
+        }
+        res.send({ message: 'Tareas actualizadas correctamente' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ error: 'Error al actualizar las tareas' });
+    }
+});
+
+
+app.post('/api/updateTask', async (req, res) => {
+    const { idUser, idTask, priority, description, taskName } = req.body;
+    const updateTask = `UPDATE tasks t SET priority = ?, description_task = ?, task_name = ? \
+        WHERE id_user = ? && id_task = ?`;
+    try {
+        const result = await dbQuery(updateTask, [priority, description, taskName, idUser, idTask]);
+        res.send(result);
+    } catch (error) {
+        console.log(error);
+        res.send(error);
+    }
+});
+
 app.post('/api/signup', async (req, res) => {
     const { userName, password, passwordConfirm, userEmail } = req.body;
 

@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
-import FormInsertTask from './FormInsertTask';
+// import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+// import FormInsertTask from './FormInsertTask';
 
 const TasksFilter = ({ user, tasks, handleTasks }) => {
-    console.log(user);
+    // console.log(user);
     const [visibility, setVisibility] = useState(false);
 
     return (
@@ -18,10 +18,10 @@ const TasksFilter = ({ user, tasks, handleTasks }) => {
                         <option value='doing'>Doing</option>
                         <option value='did'>Did</option>
                     </select>
-                    <button onClick={() => setVisibility(!visibility)}>
+                    {/* <button onClick={() => setVisibility(!visibility)}>
                         <PlaylistAddIcon />
-                    </button>
-                    <FormInsertTask visibility={visibility} handleTasks={handleTasks} tasks={tasks} user={user.id_user}/>
+                    </button> */}
+                    {/* <FormInsertTask visibility={visibility} handleTasks={handleTasks} tasks={tasks} user={user.id_user}/> */}
                 </div>
             </div>
         </>

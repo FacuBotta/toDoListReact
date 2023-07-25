@@ -1,37 +1,55 @@
-import React from 'react'
+import React, { useState } from 'react'
 import '../styles/App.css'
 import SingleTask from './SingleTask'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
-import { useDrop } from 'react-dnd';
+import { Draggable } from 'react-beautiful-dnd';
+import FormInsertTask from './FormInsertTask';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const TaskCard = ({ title, taskStatus, handleTasks }) => {
-    const [, drop] = useDrop(()=> ({
-        accept: 'task',
-        drop: (item) => {
-            const draggedTaskId = item.id;
-            const updateTaskInDrop = item.updateTaskInDrop;
 
-            if (title == 'To Do') {
-                updateTaskInDrop('toDo', draggedTaskId);
-            } else if (title == 'In Progress') {
-                updateTaskInDrop('InProgress', draggedTaskId);
-            } else if (title == 'Completed') {
-                updateTaskInDrop('Completed', draggedTaskId);
-            }
-        },
-    }));
-
+const TaskCard = ({ title, tasks, handleTasks, provided, status }) => {
+    const [formOpen, setFormOpen] = useState(false);
+    const open = () => setFormOpen(true);
+    const close = () => setFormOpen(false);
     return (
-        <div ref={drop} className='task-card'>
+        <div className='task-card' ref={provided.innerRef} {...provided.droppableProps}>
             <div className='task-card-head'>
                 <h4>{title}</h4>
-                <button>
+                <motion.button onClick={() => (formOpen ? close() : open())}>
                     <PlaylistAddIcon />
-                </button>
+                </motion.button>
+                <AnimatePresence
+                    initial={false}
+                    mode='wait'
+                    onExitComplete={() => null}
+                >
+                    {formOpen && (
+                        <FormInsertTask
+                            key={formOpen ? 'open' : 'closed'}
+                            formOpen={formOpen}
+                            isDragDisabled={true}
+                            handleClose={close}
+                            handleTasks={handleTasks}
+                            status={status}
+                            title={title}
+                            order={tasks}
+                        />
+                    )}
+                </AnimatePresence>
             </div>
-            {taskStatus.map((task, index) => (
-                <SingleTask key={index} taskData={task} handleTasks={handleTasks}/>
+            {tasks.map((task, index) => (
+                <Draggable draggableId={`${task.id_task}`} key={task.id_task} index={index}>
+                    {(provided, snapshot) => (
+                        <SingleTask
+                            key={index}
+                            taskData={task}
+                            handleTasks={handleTasks}
+                            provided={provided}
+                        />
+                    )}
+                </Draggable>
             ))}
+            {provided.placeholder}
         </div>
     );
 };
