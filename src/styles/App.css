@@ -169,7 +169,7 @@
   height: 3rem;
   background-color: #37393c;
   border-radius: 5px;
-  margin: 5px;
+  margin: 2px;
   transition: all .3s ease;
   transform-origin: top;
   display: flex;
@@ -177,10 +177,12 @@
   justify-content: start;
   overflow: hidden;
   position: relative;
+  
 }
 .container-all .container-cards .task-card .task-item:hover {
+  font-size: 1.5rem;
   height: 3.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.659);
+  /* border: 1px solid rgba(255, 255, 255, 0.659); */
 }
 .task-active {
   background-color: rgb(7, 145, 85);

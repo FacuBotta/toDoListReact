@@ -1,31 +1,39 @@
 const express = require('express');
-const app = express();
 const mysql = require('mysql');
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 var session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
+require('dotenv').config({path:'../.env'});
 
-const options = {
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'list_to_do_db',
-}
-const db = mysql.createPool(options);
-const sessionStore = new MySQLStore(options);
+const app = express();
+const port = process.env.PORT || 3000;
+const dbOptions = {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+};
+const sessionOptions = {
+    key: process.env.SESSION_KEY,
+    secret: process.env.SESSION_SECRET,
+    store: new MySQLStore(dbOptions),
+    resave: false,
+    saveUninitialized: false,
+};
+const db = mysql.createPool(dbOptions);
 
 db.getConnection((err, connection) => {
     if (err) {
         console.error('Error connecting to database:', err);
         return;
-    }
+    };
     console.log('Connected to database!');
     connection.release();
 });
+
 app.use(express.json());
 app.use(cors({
     origin: "http://localhost:3000",
@@ -34,13 +42,21 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-    key: "userId",
-    secret: "suscribe",
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-}));
+app.use(session(sessionOptions));
+
+app.on('close', () => {
+    db.end((err) => {
+        if (err) {
+            console.error('Error closing database connection:', err);
+        } else {
+            console.log('Database connection closed.');
+        }
+    });
+});
+app.listen(process.env.PORT, () => {
+    console.log(`Running on port: ${port} `);
+});
+
 function dbQuery(sql, params) {
     return new Promise((resolve, reject) => {
         db.query(sql, params, (error, result) => {
@@ -124,8 +140,6 @@ app.post('/api/updateTaskDrag', async (req, res) => {
         res.status(500).send({ error: 'Error al actualizar las tareas' });
     }
 });
-
-
 app.post('/api/updateTask', async (req, res) => {
     const { idUser, idTask, priority, description, taskName } = req.body;
     const updateTask = `UPDATE tasks t SET priority = ?, description_task = ?, task_name = ? \
@@ -138,7 +152,6 @@ app.post('/api/updateTask', async (req, res) => {
         res.send(error);
     }
 });
-
 app.post('/api/signup', async (req, res) => {
     const { userName, password, passwordConfirm, userEmail } = req.body;
 
@@ -172,6 +185,4 @@ app.post('/api/signup', async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
-app.listen(3001, () => {
-    console.log('Running on port 3001');
-});
+

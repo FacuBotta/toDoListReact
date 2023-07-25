@@ -11,6 +11,7 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status }) => {
     const [formOpen, setFormOpen] = useState(false);
     const open = () => setFormOpen(true);
     const close = () => setFormOpen(false);
+
     return (
         <div className='task-card' ref={provided.innerRef} {...provided.droppableProps}>
             <div className='task-card-head'>
