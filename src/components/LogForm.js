@@ -18,9 +18,9 @@ const LogForm = ( { handleClose, defLoging} ) => {
                 password: loginPassword,
             }, { withCredentials: true });
             console.log(response.data)
-            // localStorage.setItem('token', )
+            localStorage.setItem('token', response.data.token)
             // defLoging(response.data);
-            // navigate('/User-home');
+            navigate('/User-home');
         } catch (error) {
             console.error(error);
         }

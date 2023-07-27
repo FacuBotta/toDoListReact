@@ -8,10 +8,10 @@ var session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 require('dotenv').config({path:'../.env'});
 
-// const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken')
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.SERVER_PORT || 3002;
 const dbOptions = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -55,10 +55,10 @@ app.on('close', () => {
         }
     });
 });
-app.listen(process.env.PORT, () => {
+app.listen(port, () => {
     console.log(`Running on port: ${port} `);
 });
-/* const verifyJWT = (req, res, next)=> {
+const verifyJWT = (req, res, next)=> {
     const token = req.headers('x-access-token')
     if (!token) {
         res.send('no token')
@@ -72,7 +72,7 @@ app.listen(process.env.PORT, () => {
             }
         })
     }
-} */
+}
 function dbQuery(sql, params) {
     return new Promise((resolve, reject) => {
         db.query(sql, params, (error, result) => {
@@ -95,17 +95,19 @@ app.post('/api/login', async (req, res) => {
             if (match) {
                 req.session.user = user.name;
                 req.session.userId = user.id_user;
-                /* const idUser = user.id_user;
+                const idUser = user.id_user;
                 const token = jwt.sign({idUser}, process.env.TOKEN_SECRET, {
                     expiresIn: 300,
-                }) */
-                // res.json({ auth: true, token: token, result: result });
-                res.send(req.session)
+                })
+                res.json({ auth: true, token: token, result: result });
+                // res.send(req.session)
             } else {
                 res.json({ auth: false, message: 'Invalid username or password'} );
+                // res.status(401).send('Invalid username or password');
             }
         } else {
             res.json({ auth: false, message: 'Invalid username or password'} );
+            // res.status(401).send('Invalid username or password');
         }
     } catch (error) {
         console.error(error);
