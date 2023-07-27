@@ -5,9 +5,6 @@ import { motion } from 'framer-motion';
 import Backrop from './Backrop';
 
 
-
-
-
 const LogForm = ( { handleClose, defLoging} ) => {
     const navigate = useNavigate();
     const [loginUserName, setLoginUserName] = useState('');
@@ -21,8 +18,9 @@ const LogForm = ( { handleClose, defLoging} ) => {
                 password: loginPassword,
             }, { withCredentials: true });
             console.log(response.data)
-            defLoging();
-            navigate('/User-home');
+            // localStorage.setItem('token', )
+            // defLoging(response.data);
+            // navigate('/User-home');
         } catch (error) {
             console.error(error);
         }

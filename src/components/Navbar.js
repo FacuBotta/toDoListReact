@@ -13,7 +13,12 @@ const Navbar = () => {
     const [isLoged, setIsLoged] = useState(false)
     const open = () => setFormOpen(true);
     const close = () => setFormOpen(false);
-    const defLoging = () => { setIsLoged(!isLoged) }
+    
+    const defLoging = (data) => { 
+        console.log(data);
+        setIsLoged(!isLoged)
+    }
+
     return (
         <>
             <header className='navbar'>

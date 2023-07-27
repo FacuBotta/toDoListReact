@@ -8,8 +8,10 @@ var session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 require('dotenv').config({path:'../.env'});
 
+// const jwt = require('jsonwebtoken')
+
 const app = express();
-const port = process.env.SERVER_PORT || 3002;
+const port = process.env.PORT || 3000;
 const dbOptions = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -53,10 +55,24 @@ app.on('close', () => {
         }
     });
 });
-app.listen(port, () => {
+app.listen(process.env.PORT, () => {
     console.log(`Running on port: ${port} `);
 });
-
+/* const verifyJWT = (req, res, next)=> {
+    const token = req.headers('x-access-token')
+    if (!token) {
+        res.send('no token')
+    } else {
+        jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded)=> {
+            if (err) {
+                res.json({ auth: false, message: 'not authenticate'})
+            } else {
+                res.userId = decoded.id;
+                next();
+            }
+        })
+    }
+} */
 function dbQuery(sql, params) {
     return new Promise((resolve, reject) => {
         db.query(sql, params, (error, result) => {
@@ -79,18 +95,26 @@ app.post('/api/login', async (req, res) => {
             if (match) {
                 req.session.user = user.name;
                 req.session.userId = user.id_user;
-                res.send(req.session);e
+                /* const idUser = user.id_user;
+                const token = jwt.sign({idUser}, process.env.TOKEN_SECRET, {
+                    expiresIn: 300,
+                }) */
+                // res.json({ auth: true, token: token, result: result });
+                res.send(req.session)
             } else {
-                res.status(401).send('Invalid username or password');
+                res.json({ auth: false, message: 'Invalid username or password'} );
             }
         } else {
-            res.status(401).send('Invalid username or password');
+            res.json({ auth: false, message: 'Invalid username or password'} );
         }
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal server error');
     }
 });
+/* app.get('/api/isConected', verifyJWT, (req, res)=> {
+    res.send('true')
+}) */
 app.post('/api/getUser', (req, res) => {
         const idUser = req.session.userId;
         const sqlSelectedUser = `SELECT u.id_user, u.name, u.updated_at, ( SELECT GROUP_CONCAT(t.task_name SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
