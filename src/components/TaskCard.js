@@ -16,7 +16,7 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status }) => {
         <div className='task-card' ref={provided.innerRef} {...provided.droppableProps}>
             <div className='task-card-head'>
                 <h4>{title}</h4>
-                <motion.button onClick={() => (formOpen ? close() : open())}>
+                <motion.button className='add-new-task-btn' onClick={() => (formOpen ? close() : open())}>
                     <PlaylistAddIcon />
                 </motion.button>
                 <AnimatePresence

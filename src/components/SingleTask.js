@@ -37,10 +37,9 @@ const SingleTask = ({ taskData, handleTasks, provided }) => {
                 {...provided.droppableProps}
                 {...provided.draggableProps}
                 id='task-item'
-            // style={style}
             >
                 <h6>{taskData.task_name}</h6>
-                <motion.button onClick={() => (taskOpen ? close() : open())}>
+                <motion.button className='open-task-icon-btn' onClick={() => (taskOpen ? close() : open())}>
                     <KeyboardArrowDownIcon className='icon-task-open' />
                 </motion.button>
                 <AnimatePresence

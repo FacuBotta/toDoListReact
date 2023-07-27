@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Backrop from './Backrop';
 
 const OpenTask = ({ taskData, handleClose, handleTasks }) => {
+    console.log(taskData)
     const [taskName, setTaskName] = useState(taskData.task_name);
     const [priority, setPriority] = useState(taskData.priority);
     const [description, setDescription] = useState(taskData.description_task);

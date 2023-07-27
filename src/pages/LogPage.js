@@ -1,30 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import LogForm from '../components/LogForm';
 
 const LogPage = () => {
-    const [loginUserName, setLoginUserName] = useState('');
-    const [loginPassword, setLoginPassword] = useState('');
+    
     const [newUserName, setNewUserName] = useState('');
     const [newUserEmail, setNewUserEmail] = useState('');
     const [newUserPassword, setNewUserPassword] = useState('');
     const [newUserPasswordConfirm, setNewUserPasswordConfirm] = useState('');
-    const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('http://localhost:3001/api/login', {
-                userName: loginUserName,
-                password: loginPassword,
-            }, {withCredentials: true});
-            // console.log(response.data)
-            navigate('/User-home');
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
+    
     const handleSignUp = async (e) => {
         e.preventDefault();
         try {
@@ -43,23 +28,7 @@ const LogPage = () => {
 
     return (
         <div className='container-all'>
-            <h1>Log in</h1>
-            <form className='log-form' onSubmit={handleLogin}>
-                <input
-                    type='text'
-                    placeholder='User Name'
-                    value={loginUserName}
-                    onChange={(e) => setLoginUserName(e.target.value)}
-                />
-                <input
-                    type='password'
-                    placeholder='Password'
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                />
-                <button type='submit'>Log in!</button>
-            </form>
-            <h1>Or Sign In!</h1>
+            <LogForm/>
             <form className='log-form' onSubmit={handleSignUp}>
                 <input
                     name='newUserName'

@@ -1,6 +1,7 @@
 :root {
   --main-bg-color: rgba(0, 0, 0, 0.5);
   --gray-color: rgba(161, 161, 161, 0.784);
+  --green-inputs: #0dff92;
 }
 
 * {
@@ -8,6 +9,7 @@
   padding: 0;
   box-sizing: border-box;
 }
+
 .App {
   text-align: center;
   background-color: #37393c;
@@ -19,18 +21,20 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
 .backdrop {
   position: fixed;
   top: 0;
   left: 0;
   height: 100%;
   width: 100%;
-  background: rgba(0, 0, 0, 0.821);
+  background: rgba(0, 0, 0, 0.913);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
 }
+
 .navbar {
   width: 95%;
   height: 150px;
@@ -42,60 +46,40 @@
   justify-content: space-between;
   align-items: center;
 }
+
 .navbar .nav-title {
   align-self: flex-start;
   margin: 0 auto;
   position: absolute;
   left: 38%;
 }
+
 .navbar .nav-links {
   align-self: flex-end;
 }
+
 .navbar .nav-links a {
   margin-left: 10px;
 }
+
 .navbar .nav-logo {
   width: 100px;
 }
+
 .navbar .nav-logo img {
   width: 100%;
 }
-.container-form-insert-task {
-  background-color: #37393c;
-  flex-direction: column;
-  height: 50vh;
-  width: 50vw;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 9999;
-  animation: taskEnter 0.3s ease forwards;
+.log-form {
+  background-color: #0dff92;
+  /* position: fixed; */
+  /* top: 50%; */
+  /* left: 0; */
+  /* display: flex; */
+  /* margin: auto; */
+
+
 }
-.container-form-insert-task form {
-  display: flex;
-  flex-direction: column;
-}
-.container-form-insert-task form textarea,
-.container-all .container-cards .task-card textarea {
-  width: 95%;
-  margin: 30px auto;
-  padding: 5px;
-  background: none;
-  /* background: var(--main-bg-color); */
-  border: solid 2px rgb(255, 255, 255);
-  color: white;
-}
-.container-form-insert-task form input,
-.container-form-insert-task form button,
-.container-form-insert-task form select {
-  width: 95%;
-  margin: 10px auto 0px;
-  background: var(--gray-color);
-}
-.container-form-insert-task.visible {
-  display: flex;
-}
+
 .container-all {
   width: 100%;
   min-height: 80vh;
@@ -103,6 +87,7 @@
   border-radius: 10px;
   margin-bottom: 10px;
 }
+
 .container-all .container-user {
   background-color: var(--main-bg-color);
   width: 95%;
@@ -113,18 +98,21 @@
   justify-content: space-between;
   align-items: end;
 }
+
 .container-all .container-user .container-search-user {
   display: flex;
   align-items: start;
   height: 30px;
 
 }
+
 .container-all .container-user .container-search-user select,
-.container-all .container-user .container-search-user input{
+.container-all .container-user .container-search-user input {
   margin-left: 10px;
   height: 100%;
   padding: 5px;
 }
+
 .container-all .container-cards {
   width: 100%;
   min-height: 100%;
@@ -133,6 +121,7 @@
   display: flex;
   justify-content: space-around;
 }
+
 .container-all .container-cards .task-card {
   background-color: var(--main-bg-color);
   border-radius: 10px;
@@ -142,14 +131,16 @@
   display: flex;
   flex-direction: column;
 }
+
 .container-all .container-cards .task-card .task-card-head {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
 }
-.container-all .container-cards .task-card .task-card-head button,
-.container-all .container-cards .task-card #task-item button {
+
+.container-all .container-cards .task-card #task-item .open-task-icon-btn,
+.container-all .container-cards .task-card .task-card-head .add-new-task-btn {
   background: none;
   color: white;
   border: none;
@@ -157,14 +148,16 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
-.container-all .container-cards .task-card .task-card-head button:hover {
+
+.container-all .container-cards .task-card .task-card-head .add-new-task-btn:hover {
   scale: 1.2;
 }
-.container-all .container-cards .task-card #task-item button {
+
+/* .container-all .container-cards .task-card #task-item button {
   width: fit-content;
   align-self: center;
+} */
 
-}
 .container-all .container-cards .task-card .task-item {
   height: 3rem;
   background-color: #37393c;
@@ -177,37 +170,236 @@
   justify-content: start;
   overflow: hidden;
   position: relative;
-  
+
 }
+
 .container-all .container-cards .task-card .task-item:hover {
   font-size: 1.5rem;
   height: 3.5rem;
-  /* border: 1px solid rgba(255, 255, 255, 0.659); */
 }
-.task-active {
-  background-color: rgb(7, 145, 85);
-  display: flex;
-  flex-direction: column;
+
+.backdrop .task-active {
+  background-color: rgb(30, 30, 30);
+  border-radius: 10px;
   height: min(50%, 300px);
   width: clamp(50%, 700px, 90%);
   margin: auto;
   padding: 0 2rem;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  /* box-shadow: 0 0 20px rgba(60, 188, 148, 0.5); */
 }
+
+.backdrop .task-active h4 {
+  padding: 5px;
+}
+
+.backdrop .task-active .task-head {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-container {
+  position: relative;
+  width: 60%;
+  margin: auto;
+}
+
+.backdrop .task-active .task-head input {
+  width: 100%;
+  margin: auto;
+  padding: 2px;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #757575;
+  color: white;
+}
+
+.input-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: transparent;
+  transition: width 0.3s, background-color 0.3s;
+}
+
+input:focus {
+  outline: none;
+}
+
+input:focus+.input-bar {
+  width: 100%;
+  background-color: var(--green-inputs);
+}
+
+.backdrop .task-active .container-radios {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backdrop .task-active .container-radios ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  /* Mostrar los radio buttons en línea */
+  /* background-color: #0dff9263; */
+  width: 100%;
+}
+
+.backdrop .task-active .container-radios ul li {
+  color: #aaaaaa;
+  display: flex;
+  /* Mostrar los elementos en línea */
+  align-items: center;
+  /* Centrar verticalmente */
+  margin-right: 100px;
+  margin: auto;
+}
+
+.backdrop .task-active .container-radios ul li input[type="radio"] {
+  position: absolute;
+  visibility: hidden;
+}
+
+.backdrop .task-active .container-radios ul li label {
+  font-weight: 300;
+  font-size: 1rem;
+  /* Tamaño de fuente reducido */
+  padding-right: 10px;
+  /* Espacio a la izquierda del texto */
+  cursor: pointer;
+  transition: color 0.25s linear;
+}
+
+.backdrop .task-active .container-radios ul li .check {
+  border: 3px solid #aaaaaa;
+  /* Reducir el grosor del borde */
+  border-radius: 100%;
+  height: 20px;
+  /* Reducir el tamaño */
+  width: 20px;
+  /* Reducir el tamaño */
+  display: flex;
+  align-items: center;
+  /* Centrar verticalmente */
+  justify-content: center;
+  /* Centrar horizontalmente */
+  margin-right: 5px;
+  /* Espacio entre el radio button y el texto */
+  transition: border 0.25s linear;
+}
+
+.backdrop .task-active .container-radios ul li .check::before {
+  content: "";
+  border-radius: 100%;
+  height: 12px;
+  /* Reducir el tamaño */
+  width: 12px;
+  /* Reducir el tamaño */
+  margin: auto;
+  transition: background 0.25s linear;
+}
+
+.backdrop .task-active .container-radios ul li input[type="radio"]:checked~.check {
+  border: 3px solid var(--green-inputs);
+  /* Cambiar el color del borde al seleccionado */
+}
+
+.backdrop .task-active .container-radios ul li input[type="radio"]:checked~.check::before {
+  background: var(--green-inputs);
+  /* Cambiar el color del punto al seleccionado */
+}
+
+.backdrop .task-active .container-radios ul li input[type="radio"]:checked~label {
+  color: var(--green-inputs);
+  /* Cambiar el color del texto al seleccionado */
+}
+
+.backdrop .task-active textarea {
+  margin: 20px 0;
+  padding: 5px;
+  color: white;
+  background: none;
+  resize: none;
+  transition: all .6s ease;
+}
+
+.backdrop .task-active textarea:focus {
+  outline: none;
+  border-color: var(--green-inputs);
+}
+
+.backdrop .task-active .container-btn {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.backdrop .task-active .container-btn button {
+  width: 130px;
+  height: 40px;
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px 25px;
+  font-weight: 500;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.6s ease;
+  position: relative;
+  display: inline-block;
+  box-shadow: inset 1px 1px 1px 0px rgba(255, 255, 255, .5),
+    7px 7px 20px 0px rgba(0, 0, 0, .1),
+    4px 4px 5px 0px rgba(0, 0, 0, .1);
+  outline: none;
+  padding: 0;
+  border: none;
+  margin: 0 10px;
+}
+.backdrop .task-active .container-btn .add-task-btn {
+  background-color: var(--green-inputs);
+  background-image: linear-gradient(315deg, rgba(36, 36, 36, 0.724) 0%, #212121cd 74%);
+}
+.backdrop .task-active .container-btn .add-task-btn:hover {
+  background-color: var(--green-inputs);
+  background-image: linear-gradient(315deg, rgb(21, 68, 46) 0%, #10703eb7 74%);
+}
+.backdrop .task-active .container-btn .close-form-btn {
+  background-color: red;
+  background-image: linear-gradient(315deg, rgba(36, 36, 36, 0.724) 0%, #212121cd 74%);
+}
+.backdrop .task-active .container-btn .close-form-btn:hover {
+  background-color: red;
+  background-image: linear-gradient(315deg, rgba(101, 7, 7, 0.724) 0%, #101010cd 74%);
+}
+
+
 .container-all .container-cards .task-card #task-item button .icon-task-open {
   scale: .7;
   transform: translateY(8px);
   color: var(--gray-color);
 }
+
 .container-all .container-cards .task-card .task-item:hover .icon-task-open {
   animation: icon-open-animation .8s infinite ease-in-out;
 }
+
 @keyframes icon-open-animation {
   0% {
     transform: translateY(-2px);
   }
+
   50% {
     transform: translateY(8px);
   }
+
   100% {
     transform: translateY(-2px);
   }

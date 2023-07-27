@@ -7,7 +7,6 @@ const FormInsertTask = ({ handleTasks, handleClose, status, title, order }) => {
     const [taskName, setTaskName] = useState('');
     const [priority, setPriority] = useState('Medium');
     const [description, setDescription] = useState('');
-    console.log(order.length + 1)
     const handlePriorityChange = (value) => {
         setPriority(value)
     };
@@ -21,8 +20,8 @@ const FormInsertTask = ({ handleTasks, handleClose, status, title, order }) => {
                 description: description,
                 taskName: taskName,
                 order: order.length + 1,
-            }, {withCredentials: true})
-        }catch (error) {
+            }, { withCredentials: true })
+        } catch (error) {
             console.log(error)
         }
         handleTasks();
@@ -45,7 +44,7 @@ const FormInsertTask = ({ handleTasks, handleClose, status, title, order }) => {
             }
         },
         exit: {
-            y: '100vh',
+            x: '-100vh',
             opacity: 0,
         },
     }
@@ -59,42 +58,65 @@ const FormInsertTask = ({ handleTasks, handleClose, status, title, order }) => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-            >
-                <h4>{title}</h4>
-                <input value={taskName} placeholder='Task Name' onChange={(e) => setTaskName(e.target.value)} />
-                <p>Priority:</p>
-                <div className='container-radios'>
-                    <label>
-                        <input
-                            type="radio"
-                            value="High"
-                            checked={priority === 'High'}
-                            onChange={() => handlePriorityChange('High')}
-                        />
-                        High
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="Medium"
-                            checked={priority === 'Medium'}
-                            onChange={() => handlePriorityChange('Medium')}
-                        />
-                        Medium
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="Low"
-                            checked={priority === 'Low'}
-                            onChange={() => handlePriorityChange('Low')}
-                        />
-                        Low
-                    </label>
+            >   <div className='task-head'>
+                    <h4>{title}</h4>
+                    <div className='input-container'>
+                        <input value={taskName} placeholder='Task Name' onChange={(e) => setTaskName(e.target.value)} />
+                        <span className='input-bar'></span>
+                    </div>
                 </div>
-                <textarea value={description} placeholder='Description' onChange={(e) => setDescription(e.target.value)}></textarea>
-                <button onClick={(e) => insertNewTask(e)}>Add Task!</button>
-                <button onClick={handleClose}>Close</button>
+                <h4>Priority:</h4>
+                <div className='container-radios'>
+                    <ul>
+                        <li>
+                            <input
+                                type="radio"
+                                id="f-option"
+                                name="selector"
+                                value="High"
+                                checked={priority === 'High'}
+                                onChange={() => handlePriorityChange('High')}
+                            />
+                            <label htmlFor="f-option">High</label>
+                            <div className="check"></div>
+                        </li>
+
+                        <li>
+                            <input
+                                type="radio"
+                                id="s-option"
+                                name="selector"
+                                value="Medium"
+                                checked={priority === 'Medium'}
+                                onChange={() => handlePriorityChange('Medium')}
+                            />
+                            <label htmlFor="s-option">Medium</label>
+                            <div className="check">
+                                <div className="inside"></div>
+                            </div>
+                        </li>
+
+                        <li>
+                            <input
+                                type="radio"
+                                id="t-option"
+                                name="selector"
+                                value="Low"
+                                checked={priority === 'Low'}
+                                onChange={() => handlePriorityChange('Low')}
+                            />
+                            <label htmlFor="t-option">Low</label>
+                            <div className="check">
+                                <div className="inside"></div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <textarea rows="5" value={description} placeholder='Description' onChange={(e) => setDescription(e.target.value)}></textarea>
+                <div className='container-btn'>
+                    <button className='add-task-btn' onClick={(e) => insertNewTask(e)}>Add Task!</button>
+                    <button className='close-form-btn' onClick={handleClose}>Close</button>
+                </div>
             </motion.div>
         </Backrop>
     )

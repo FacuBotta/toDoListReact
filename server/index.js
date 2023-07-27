@@ -9,7 +9,7 @@ const MySQLStore = require('express-mysql-session')(session);
 require('dotenv').config({path:'../.env'});
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.SERVER_PORT || 3002;
 const dbOptions = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -53,7 +53,7 @@ app.on('close', () => {
         }
     });
 });
-app.listen(process.env.PORT, () => {
+app.listen(port, () => {
     console.log(`Running on port: ${port} `);
 });
 
@@ -79,7 +79,7 @@ app.post('/api/login', async (req, res) => {
             if (match) {
                 req.session.user = user.name;
                 req.session.userId = user.id_user;
-                res.send(req.session);
+                res.send(req.session);e
             } else {
                 res.status(401).send('Invalid username or password');
             }
