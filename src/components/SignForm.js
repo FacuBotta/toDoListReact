@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import LogForm from '../components/LogForm';
 
-const LogPage = () => {
-    
+const SignForm = ({ handleClose, toggleForm }) => {
+
     const [newUserName, setNewUserName] = useState('');
     const [newUserEmail, setNewUserEmail] = useState('');
     const [newUserPassword, setNewUserPassword] = useState('');
     const [newUserPasswordConfirm, setNewUserPasswordConfirm] = useState('');
 
-    
+
     const handleSignUp = async (e) => {
         e.preventDefault();
         try {
@@ -20,16 +19,15 @@ const LogPage = () => {
                 userEmail: newUserEmail,
             });
             console.log(response.data);
-            // navigate('/User-home', { state: response.data[0].id_user });
+            toggleForm();
         } catch (error) {
             console.error(error);
         }
     };
 
     return (
-        <div className='container-all'>
-            <LogForm/>
-            <form className='log-form' onSubmit={handleSignUp}>
+        <form onSubmit={handleSignUp}>
+            <div className='input-container'>
                 <input
                     name='newUserName'
                     type='text'
@@ -37,6 +35,9 @@ const LogPage = () => {
                     value={newUserName}
                     onChange={(e) => setNewUserName(e.target.value)}
                 />
+                <span className='input-bar'></span>
+            </div>
+            <div className='input-container'>
                 <input
                     name='newUserEmail'
                     type='text'
@@ -44,6 +45,9 @@ const LogPage = () => {
                     value={newUserEmail}
                     onChange={(e) => setNewUserEmail(e.target.value)}
                 />
+                <span className='input-bar'></span>
+            </div>
+            <div className='input-container'>
                 <input
                     name='newUserPass'
                     type='password'
@@ -51,6 +55,9 @@ const LogPage = () => {
                     value={newUserPassword}
                     onChange={(e) => setNewUserPassword(e.target.value)}
                 />
+                <span className='input-bar'></span>
+            </div>
+            <div className='input-container'>
                 <input
                     name='newUserPassConfirm'
                     type='password'
@@ -58,10 +65,13 @@ const LogPage = () => {
                     value={newUserPasswordConfirm}
                     onChange={(e) => setNewUserPasswordConfirm(e.target.value)}
                 />
-                <button type='submit'>Sign up!</button>
-            </form>
-        </div>
+                <span className='input-bar'></span>
+            </div>
+            <div className='container-btn'>
+                <button className='add-task-btn' type='submit'>Sign up!</button>
+            </div>
+        </form>
     );
 };
 
-export default LogPage;
+export default SignForm;

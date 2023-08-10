@@ -3,12 +3,13 @@ import '../styles/App.css'
 import SingleTask from './SingleTask'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import { Draggable } from 'react-beautiful-dnd';
-import FormInsertTask from './FormInsertTask';
+import FormTask from './FormTask';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
-const TaskCard = ({ title, tasks, handleTasks, provided, status }) => {
+const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag }) => {
     const [formOpen, setFormOpen] = useState(false);
+
     const open = () => setFormOpen(true);
     const close = () => setFormOpen(false);
 
@@ -25,7 +26,7 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status }) => {
                     onExitComplete={() => null}
                 >
                     {formOpen && (
-                        <FormInsertTask
+                        <FormTask
                             key={formOpen ? 'open' : 'closed'}
                             formOpen={formOpen}
                             isDragDisabled={true}
@@ -34,6 +35,7 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status }) => {
                             status={status}
                             title={title}
                             order={tasks}
+                            action={'insert'}
                         />
                     )}
                 </AnimatePresence>
@@ -46,6 +48,10 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status }) => {
                             taskData={task}
                             handleTasks={handleTasks}
                             provided={provided}
+                            snapshot={snapshot}
+                            isItemOnDrag={isItemOnDrag}
+                            title={title}
+
                         />
                     )}
                 </Draggable>

@@ -1,33 +1,15 @@
 import React, { useState } from 'react'
-import axios from 'axios';
 import { motion } from 'framer-motion';
 import Backrop from './Backrop';
+import { updateTask, insertNewTask } from '../utils/helpers'
 
-const FormInsertTask = ({ handleTasks, handleClose, status, title, order }) => {
-    const [taskName, setTaskName] = useState('');
-    const [priority, setPriority] = useState('Medium');
-    const [description, setDescription] = useState('');
+const FormTask = ({ taskData, handleTasks, handleClose, status, title, order, action }) => {
+    const [taskName, setTaskName] = useState(`${action === 'update' ? taskData.task_name : ''}`);
+    const [priority, setPriority] = useState(`${action === 'update' ? taskData.priority : 'Medium'}`);
+    const [description, setDescription] = useState(`${action === 'update' ? taskData.description_task : ''}`);
     const handlePriorityChange = (value) => {
         setPriority(value)
     };
-
-    const insertNewTask = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('http://localhost:3001/api/insertTask', {
-                status: status,
-                priority: priority,
-                description: description,
-                taskName: taskName,
-                order: order.length + 1,
-            }, { withCredentials: true })
-        } catch (error) {
-            console.log(error)
-        }
-        handleTasks();
-        handleClose();
-    };
-
     const dropIn = {
         hidden: {
             y: '-100vh',
@@ -65,6 +47,12 @@ const FormInsertTask = ({ handleTasks, handleClose, status, title, order }) => {
                         <span className='input-bar'></span>
                     </div>
                 </div>
+                {action === 'update' && (
+                    <div className='container-dates'>
+                        <p>Created: {taskData.created_at}</p>
+                        <p>Last update: {taskData.updated_at !== null && taskData.updated_at !== '' ? taskData.updated_at : 'No updates'}</p>
+                    </div>
+                )}
                 <h4>Priority:</h4>
                 <div className='container-radios'>
                     <ul>
@@ -114,7 +102,11 @@ const FormInsertTask = ({ handleTasks, handleClose, status, title, order }) => {
                 </div>
                 <textarea rows="5" value={description} placeholder='Description' onChange={(e) => setDescription(e.target.value)}></textarea>
                 <div className='container-btn'>
-                    <button className='add-task-btn' onClick={(e) => insertNewTask(e)}>Add Task!</button>
+                    <button className='add-task-btn'
+                        onClick={(e) => action === 'insert' ?
+                            insertNewTask(e, order, status, priority, description, taskName, handleTasks, handleClose) :
+                            updateTask(e, taskData, priority, description, taskName, handleTasks, handleClose)}
+                    > {action === 'insert' ? 'Add task!' : 'Add changes!'} </button>
                     <button className='close-form-btn' onClick={handleClose}>Close</button>
                 </div>
             </motion.div>
@@ -122,4 +114,4 @@ const FormInsertTask = ({ handleTasks, handleClose, status, title, order }) => {
     )
 }
 
-export default FormInsertTask
+export default FormTask
