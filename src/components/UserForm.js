@@ -5,11 +5,10 @@ import LogForm from './LogForm';
 import SignForm from './SignForm';
 
 
-const UserForm = ({ handleClose, isUserLoged }) => {
+const UserForm = ({ handleClose, handleAuth }) => {
     const [isLogForm, setIsLogForm] = useState(true)
 
     const toggleForm = () => setIsLogForm(!isLogForm);
-    //agregar execto mas copado para el exit.
     const dropIn = {
         hidden: {
             x: '100vh',
@@ -45,7 +44,7 @@ const UserForm = ({ handleClose, isUserLoged }) => {
                     <LogForm
                         className='log-form'
                         handleClose={handleClose}
-                        isUserLoged={isUserLoged}
+                        handleAuth={handleAuth}
                     /> :
                     <SignForm
                         className='log-form'

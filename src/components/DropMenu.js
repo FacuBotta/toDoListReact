@@ -5,7 +5,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
-const DropMenu = React.forwardRef(({ handleLogOut, handleMenu}, ref ) => {
+const DropMenu = React.forwardRef(({ handleLogOut, handleDeleteUser, handleMenu}, ref ) => {
 
     return (
         <div ref={ref} className='drop-menu'>
@@ -18,7 +18,7 @@ const DropMenu = React.forwardRef(({ handleLogOut, handleMenu}, ref ) => {
                     <LogoutIcon />
                     <Link >Log Out</Link>
                 </li>
-                <li className='item-menu' onClick={(e) => handleLogOut(e)}>
+                <li className='item-menu' onClick={(e) => handleDeleteUser(e)}>
                     <PersonRemoveIcon />
                     <Link >Unsubscribe</Link>
                 </li>

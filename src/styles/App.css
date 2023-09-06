@@ -1,6 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Preahvihear&display=swap');
+
 :root {
-  --main-bg-color: rgba(0, 0, 0, 0.5);
-  --gray-color: rgba(161, 161, 161, 0.784);
+  --main-bg-color: #000000;
+  --sec-bg-color: #1e1e1e;
+  --gray-color: #5d5d5d;
   --green-inputs: #0dff92;
 }
 
@@ -8,11 +11,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Preahvihear', sans-serif;
 }
 
 .App {
   text-align: center;
-  background-color: #37393c;
+  background-color: var(--main-bg-color);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -24,12 +28,10 @@
 .container-all {
   width: 95%;
   min-height: 80vh;
-  /* background-color: var(--main-bg-color); */
   border-radius: 10px;
   margin-bottom: 10px;
 }
 .container-home {
-  /* background-color: #7ac9a6; */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -37,14 +39,10 @@
   width: 95%;
   height: 100%;
 }
-/* .home-title {
-  background-color: rgb(61, 128, 187);
-} */
 .home-bottom-block {
   display: flex;
 }
 .home-description {
-  /* background-color: #304f7e; */
   width: 50%;
   padding: 40px;
   display: flex;
@@ -53,8 +51,6 @@
   font-weight: bold;
 }
 .home-image {
-  /* display: flex; */
-  /* background-color: #0dff92; */
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -76,7 +72,7 @@
 .navbar {
   width: 95%;
   height: 100px;
-  background-color: var(--main-bg-color);
+  background-color: var(--sec-bg-color);
   border-radius: 10px;
   padding: 10px 30px;
   margin: 10px 0;
@@ -97,8 +93,6 @@
 .navbar .nav-title {
   align-self: flex-start;
   margin: 0 auto;
-  position: absolute;
-  left: 38%;
 }
 .navbar .nav-links {
   align-self: flex-end;
@@ -110,7 +104,8 @@
   color: white;
 }
 .navbar .drop-menu {
-  background-color: #000000;
+  background-color: var(--gray-color); 
+  border: 1px solid var(--gray-color);
   display: flex;
   justify-content: space-around;
   align-items: end;
@@ -128,7 +123,7 @@
   right: 10px;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-bottom: 10px solid #000000;
+  border-bottom: 10px solid var(--gray-color);
 }
 
 .navbar .drop-menu ul {
@@ -156,7 +151,7 @@
   width: 100%;
 }
 .log-form {
-  background-color: rgb(30, 30, 30);
+  background-color: var(--sec-bg-color);
   border-radius: 10px;
   height: min(50%, fit-content);
   width: clamp(30%, 500px, 80%);
@@ -184,7 +179,6 @@
 .log-form form input {
   width: 100%;
   margin: auto;
-  /* padding: 2px; */
   font-size: 1.5rem;
   background: none;
   border: none;
@@ -202,8 +196,8 @@
 }
 
 .container-all .container-cards .task-card {
-  background-color: var(--main-bg-color);
   border-radius: 10px;
+  border: solid 3px var(--sec-bg-color);
   padding: 10px;
   width: 30%;
   height: fit-content;
@@ -233,36 +227,56 @@
 }
 .container-all .container-cards .task-card .task-card-head .add-new-task-btn:hover {
   scale: 1.2;
-  color: #0dff92;
+  color: var(--green-inputs);
 }
 .container-all .container-cards .container-delete-task {
   position: absolute;
   bottom: 0;
-  /* font-size: 3rem; */
-  /* z-index: 11000; */
 }
 .container-all .container-cards .container-delete-task .icon-delete-task {
   color: rgb(196, 36, 36);
-  /* width: 100%; */
 }
 .container-all .container-cards .task-card .task-item {
   height: 3rem;
-  background-color: #37393c;
+  background-color: var(--sec-bg-color);
   border-radius: 5px;
   margin: 2px;
+  padding-top: 10px;
   transition: all .3s ease;
-  transform-origin: top;
   display: flex;
   flex-direction: column;
-  justify-content: start;
-  overflow: hidden;
   position: relative;
-
 }
 .container-all .container-cards .task-card .task-item:hover {
   font-size: 1.5rem;
-  height: 3.5rem;
+  height: 3.3rem;
+  background-color: #262626;
 }
+.container-all .container-cards .task-card #task-item button .icon-task-open {
+  scale: .7;
+  color: var(--gray-color);
+}
+
+.container-all .container-cards .task-card .task-item:hover .icon-task-open {
+  animation: icon-open-animation .8s infinite ease-in-out;
+  color: var(--green-inputs)!important;
+}
+
+@keyframes icon-open-animation {
+  0% {
+    transform: translateY(-2px);
+  }
+
+  50% {
+    transform: translateY(8px);
+  }
+
+  100% {
+    transform: translateY(-2px);
+  }
+}
+
+/* modal form styles */
 
 .backdrop .task-active {
   background-color: rgb(30, 30, 30);
@@ -275,7 +289,6 @@
   position: fixed;
   display: flex;
   flex-direction: column;
-  /* box-shadow: 0 0 20px rgba(60, 188, 148, 0.5); */
 }
 
 .backdrop .task-active h4 {
@@ -440,7 +453,7 @@ input:focus+.input-bar {
   margin: 0 10px;
 }
 .backdrop .container-btn .add-task-btn {
-  background-color: var(--green-inputs);
+  background-color: green;
   background-image: linear-gradient(315deg, rgba(36, 36, 36, 0.724) 0%, #212121cd 74%);
 }
 .backdrop .container-btn .add-task-btn:hover {
@@ -454,29 +467,4 @@ input:focus+.input-bar {
 .backdrop .container-btn .close-form-btn:hover {
   background-color: red;
   background-image: linear-gradient(315deg, rgba(101, 7, 7, 0.724) 0%, #101010cd 74%);
-}
-
-
-.container-all .container-cards .task-card #task-item button .icon-task-open {
-  scale: .7;
-  transform: translateY(8px);
-  color: var(--gray-color);
-}
-
-.container-all .container-cards .task-card .task-item:hover .icon-task-open {
-  animation: icon-open-animation .8s infinite ease-in-out;
-}
-
-@keyframes icon-open-animation {
-  0% {
-    transform: translateY(-2px);
-  }
-
-  50% {
-    transform: translateY(8px);
-  }
-
-  100% {
-    transform: translateY(-2px);
-  }
 }

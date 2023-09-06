@@ -7,7 +7,6 @@ const SingleTask = ({ taskData, handleTasks, provided, snapshot, isItemOnDrag, t
     const [taskOpen, setTaskOpen] = useState(false);
     const open = () => setTaskOpen(true);
     const close = () => setTaskOpen(false);
-
     return (
         <>
             <div
@@ -26,10 +25,9 @@ const SingleTask = ({ taskData, handleTasks, provided, snapshot, isItemOnDrag, t
                     if (snapshot.isDragging) {
                         isItemOnDrag(true);
                     }
-
                 }, [snapshot.isDragging])}
 
-                <h6>{taskData.task_name}</h6>
+                <h6>{ taskData.task_name }</h6>
                 <motion.button className='open-task-icon-btn' onClick={() => (taskOpen ? close() : open())}>
                     <KeyboardArrowDownIcon  className='icon-task-open' />
                 </motion.button>
@@ -43,14 +41,13 @@ const SingleTask = ({ taskData, handleTasks, provided, snapshot, isItemOnDrag, t
             >
                 {taskOpen && (
                     <FormTask
-                        key={taskData.id}
+                        key={taskData.id_task}
                         taskData={taskData}
-                        taskOpen={taskOpen}
                         handleClose={close}
-                        isDragDisabled={true}
                         handleTasks={handleTasks}
                         action={'update'}
                         title={title}
+                        // taskOpen={taskOpen}
                     />
                 )}
             </AnimatePresence>

@@ -24,43 +24,12 @@ const UserHome = () => {
         const fetchData = async () => {
             try {
                 const response = await axios.post('http://localhost:3001/api/getUser', null, { withCredentials: true });
-                if (response.data[0].task_names !== null) {
-                    const processedTasks = response.data.map((item) => {
-                        const idUser = item.id_user;
-                        const idTask = item.id_tasks.split(', ');
-                        const order = item.order_tasks ? item.order_tasks.split(', ') : [];
-                        const taskNames = item.task_names.split(', ');
-                        const taskDescriptions = item.task_descriptions ? item.task_descriptions.split(', ') : [];
-                        const taskCreatedAt = item.task_created_at.split(', ');
-                        const taskStatus = item.task_status.split(', ');
-                        const taskPriority = item.task_priority.split(', ');
-                        const taskUpdatedAt = item.task_updated_at.split(', ');
-
-                        const taskArray = [];
-
-                        for (let i = 0; i < idTask.length; i++) {
-                            const task = {
-                                id_user: parseInt(idUser),
-                                id_task: parseInt(idTask[i]),
-                                order_task: parseInt(order[i]),
-                                task_name: taskNames[i],
-                                description_task: taskDescriptions[i] || '',
-                                created_at: taskCreatedAt[i],
-                                status: taskStatus[i],
-                                priority: taskPriority[i],
-                                updated_at: taskUpdatedAt[i]
-                            };
-                            taskArray.push(task);
-                        }
-
-                        return taskArray;
-                    });
-                    setTasks(processedTasks[0]);
-                    // handleStatusTasks(tasks);
-                }
+                // console.log(response.data);
+                setTasks(response.data)
                 setIsLoading(false);
             } catch (error) {
                 console.log(error.message);
+                setIsLoading(false);
             }
         };
         fetchData();
@@ -155,7 +124,6 @@ const UserHome = () => {
         handleStatusTasks(updatedTasks);
         updateTasksInDrag(updatedTasks);
     };
-
     return (
         <div className='container-all'>
             {tasks.length === 0 && (
@@ -207,11 +175,12 @@ const UserHome = () => {
                                     <div className='container-delete-task' ref={provided.innerRef}
                                         style={{
                                             Height: '300px',
-                                            padding: '10px'
+                                            padding: '10px',
+                                            border: snapshot.isDraggingOver && 'solid 2px red',
                                         }}>
                                         {isOnDrag && (<DeleteForeverIcon
                                             className='icon-delete-task'
-                                            style={{ fontSize: snapshot.isDraggingOver && '3rem'}}
+                                            style={{ fontSize: snapshot.isDraggingOver && '3rem' }}
                                             />)}
                                         {provided.placeholder}
                                     </div>

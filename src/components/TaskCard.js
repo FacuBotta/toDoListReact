@@ -9,7 +9,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag }) => {
     const [formOpen, setFormOpen] = useState(false);
-
     const open = () => setFormOpen(true);
     const close = () => setFormOpen(false);
 
@@ -27,15 +26,14 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag })
                 >
                     {formOpen && (
                         <FormTask
-                            key={formOpen ? 'open' : 'closed'}
-                            formOpen={formOpen}
-                            isDragDisabled={true}
+                            key={formOpen ? 'insertOpen' : 'insertClosed'}
                             handleClose={close}
                             handleTasks={handleTasks}
                             status={status}
                             title={title}
                             order={tasks}
                             action={'insert'}
+                            // formOpen={formOpen}
                         />
                     )}
                 </AnimatePresence>
@@ -45,10 +43,10 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag })
                     {(provided, snapshot) => (
                         <SingleTask
                             key={index}
-                            taskData={task}
-                            handleTasks={handleTasks}
                             provided={provided}
                             snapshot={snapshot}
+                            taskData={task}
+                            handleTasks={handleTasks}
                             isItemOnDrag={isItemOnDrag}
                             title={title}
 

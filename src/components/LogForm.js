@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const LogForm = ({isUserLoged, handleClose}) => {
+const LogForm = ({ handleAuth, handleClose }) => {
 
     const navigate = useNavigate();
     const [loginUserName, setLoginUserName] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
 
+    
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
@@ -15,11 +16,15 @@ const LogForm = ({isUserLoged, handleClose}) => {
                 userName: loginUserName,
                 password: loginPassword,
             }, { withCredentials: true });
-            console.log(response.data)
-            isUserLoged();
+            handleAuth(true);
             navigate('/User-home');
+            
         } catch (error) {
-            console.error(error);
+            if (error.response && error.response.data && error.response.data.message) {
+                window.alert(error.response.data.message)
+            } else {
+                console.error('An error occurred while logging in');
+            }
         }
     };
 

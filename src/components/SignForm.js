@@ -18,10 +18,10 @@ const SignForm = ({ handleClose, toggleForm }) => {
                 passwordConfirm: newUserPasswordConfirm,
                 userEmail: newUserEmail,
             });
-            console.log(response.data);
+            window.alert(response.data.message);
             toggleForm();
         } catch (error) {
-            console.error(error);
+            window.alert(error.response.data.error);
         }
     };
 

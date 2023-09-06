@@ -75,10 +75,10 @@ app.post('/api/login', async (req, res) => {
                 })
                 res.json({ auth: true, id: user.id_user, name: user.name });
             } else {
-                res.json({ auth: false, message: 'Invalid username or password' });
+                res.status(400).json({ auth: false, message: 'Invalid username or password' });
             }
         } else {
-            res.json({ auth: false, message: 'Invalid username or password' });
+            res.status(400).json({ auth: false, message: 'Invalid username or password' });
         }
     } catch (error) {
         console.error(error);
@@ -91,9 +91,7 @@ app.post('/api/logOut', (req, res) => {
 });
 app.get('/api/isAuth', (req, res) => {
     try {
-        // Aquí se aplicará el middleware de autenticación
         validatedToken(req, res, () => {
-            // Una vez que el middleware ha validado el token, el control pasa a esta función
             if (!req.authenticated) {
                 return res.status(401).json({ error: 'Unauthorized' });
             }
@@ -102,47 +100,38 @@ app.get('/api/isAuth', (req, res) => {
             return res.json({ auth: true, userId: userId, userName: userName });
         });
     } catch (err) {
-        // Si el middleware lanza una excepción, el control pasa a esta sección para manejar el error.
         return res.status(400).json({ error: 'Invalid token or session expired' });
     }
 });
-app.post('/api/getUser', (req, res) => {
-    validatedToken(req, res, () => {
+app.post('/api/getUser', async (req, res) => {
+    validatedToken(req, res, async () => {
         if (!req.authenticated) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
         const idUser = req.userId;
-        const sqlSelectedUser = `SELECT u.id_user, u.name, u.updated_at, ( SELECT GROUP_CONCAT(t.task_name SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
-    AS task_names, ( SELECT GROUP_CONCAT(t.order_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user) AS order_tasks,\
-    ( SELECT GROUP_CONCAT(t.id_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user) AS id_tasks,\
-    ( SELECT GROUP_CONCAT(t.description_task SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
-    AS task_descriptions, ( SELECT GROUP_CONCAT(t.created_at SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
-    AS task_created_at, ( SELECT GROUP_CONCAT(t.status SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
-    AS task_status, ( SELECT GROUP_CONCAT(t.priority SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
-    AS task_priority, ( SELECT GROUP_CONCAT(t.updated_at SEPARATOR ', ') FROM tasks t WHERE t.id_user = u.id_user)\
-    AS task_updated_at FROM users u WHERE u.id_user = ?;`;
-        db.query(sqlSelectedUser, idUser, (err, result) => {
-            if (err) {
-                res.status(500).send('Internal server error');
-                return;
-            }
-            res.send(result);
-        });
-    })
+        const sqlSelectedUser = `SELECT * FROM tasks t WHERE t.id_user = ?`;
 
+        try {
+            const result = await dbQuery(sqlSelectedUser, idUser);
+            res.send(result);
+        } catch (error) {
+            console.log(error.message);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    });
 });
 app.post('/api/insertTask', (req, res) => {
     validatedToken(req, res, () => {
         if (!req.authenticated) {
             return res.status(401).json({ error: 'Unauthorized' })
         }
-        const { status, priority, description, taskName, order } = req.body;
+        const { status, priority, newDescription, taskName, order } = req.body;
         const idUser = req.userId;
         const insertTask = 'INSERT INTO tasks (status, priority, id_user, description_task, task_name, order_task) VALUES (?, ?, ?, ?, ?, ?)';
-        const result = dbQuery(insertTask, [status, priority, idUser, description, taskName, order]);
+        const result = dbQuery(insertTask, [status, priority, idUser, newDescription, taskName, order]);
         res.send(result);
     })
-    
+
 });
 app.post('/api/updateTaskDrag', async (req, res) => {
     const { tasks } = req.body;
@@ -156,21 +145,20 @@ app.post('/api/updateTaskDrag', async (req, res) => {
                 task.id_task,
             ]);
         }
-        res.send({ message: 'Tareas actualizadas correctamente' });
+        res.send({ message: 'Tasks updates!' });
     } catch (error) {
         console.log(error);
-        res.status(500).send({ error: 'Error al actualizar las tareas' });
+        res.status(500).send({ error: 'Error updating task, try again' });
     }
 });
 app.post('/api/updateTask', async (req, res) => {
-    const { idUser, idTask, priority, description, taskName } = req.body;
+    const { priority, description, taskName, idUser, idTask } = req.body;
     const updateTask = `UPDATE tasks t SET priority = ?, description_task = ?, task_name = ? \
-        WHERE id_user = ? AND id_task = ?`;
+        WHERE id_user = ? && id_task = ?`;
     try {
         const result = await dbQuery(updateTask, [priority, description, taskName, idUser, idTask]);
         res.send(result);
     } catch (error) {
-        console.log(error);
         res.send(error);
     }
 });
@@ -188,35 +176,50 @@ app.post('/api/deleteTask', (req, res) => {
 })
 app.post('/api/signup', async (req, res) => {
     const { userName, password, passwordConfirm, userEmail } = req.body;
-
-    // Validar que la contraseña y su confirmación coincidan
     if (password !== passwordConfirm) {
-        return res.status(400).json({ error: 'La contraseña y su confirmación no coinciden' });
+        return res.status(400).json({ error: 'Passwords do not match!' });
     }
-
-    // Validar el formato del correo electrónico utilizando una expresión regular
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(userEmail)) {
-        return res.status(400).json({ error: 'El formato del correo electrónico es inválido' });
+        return res.status(400).json({ error: 'Invalid email format!' });
     }
-
     try {
-        // Generar un hash de la contraseña utilizando bcrypt
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Guardar el nuevo usuario en la base de datos
         const sqlInsert = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
 
         db.query(sqlInsert, [userName, userEmail, hashedPassword], (err, result) => {
             if (err) {
                 console.error(err);
-                return res.status(500).send('Error interno del servidor');
+                return res.status(500).send('Internal server error');
             }
-            return res.status(201).json({ message: 'Usuario registrado exitosamente' });
+            return res.status(201).json({ message: 'User created!' });
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
+app.get('/api/deleteUser', (req, res) => {
+    try {
+        validatedToken(req, res, async () => {
+            if (!req.authenticated) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
 
+            const idUser = req.userId;
+            console.log(idUser)
+            // Antes de eliminar al usuario, elimina las tareas asociadas
+            const deleteTasksQuery = `DELETE FROM tasks WHERE id_user = ?`;
+            await dbQuery(deleteTasksQuery, idUser);
+
+            // Después de eliminar las tareas, elimina al usuario
+            const deleteUserQuery = `DELETE FROM users WHERE id_user = ?`;
+            await dbQuery(deleteUserQuery, idUser);
+
+            res.status(200).json({ message: 'User and associated tasks deleted' });
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while deleting user and tasks' });
+    }
+})
