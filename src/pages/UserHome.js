@@ -3,7 +3,7 @@ import '../styles/App.css'
 import axios from 'axios';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import TaskCard from '../components/TaskCard'
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { updateTasksInDrag, deleteTask } from '../utils/helpers'
 
 const UserHome = () => {
