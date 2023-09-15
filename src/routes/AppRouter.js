@@ -1,4 +1,4 @@
-import React from 'react'
+/* import React from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import UserHome from '../pages/UserHome';
@@ -15,4 +15,4 @@ const AppRouter = () => {
     )
 }
 
-export default AppRouter
+export default AppRouter */

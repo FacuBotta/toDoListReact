@@ -5,8 +5,11 @@ import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import TaskCard from '../components/TaskCard'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { updateTasksInDrag, deleteTask } from '../utils/helpers'
+import BarGroupTasks from '../components/BarGroupTasks';
+import GroupDetails from '../components/GroupDetails';
 
 const UserHome = () => {
+    const [groups, setGroups] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [trigger, setTrigger] = useState(false)
@@ -14,9 +17,9 @@ const UserHome = () => {
     const [tasksInProgress, setTasksInProgress] = useState([]);
     const [tasksCompleted, setTasksCompleted] = useState([]);
     const [isOnDrag, setIsOnDrag] = useState(false);
-
-    const itemOnDrag = (value) => setIsOnDrag(value)
-
+    const [currentGroup, setCurrectGroup] = useState([]);
+    
+    const itemOnDrag = (value) => setIsOnDrag(value);
     const handleTasks = () => {
         setTrigger(!trigger);
     };
@@ -25,20 +28,33 @@ const UserHome = () => {
             try {
                 const response = await axios.post('http://localhost:3001/api/getUser', null, { withCredentials: true });
                 // console.log(response.data);
-                setTasks(response.data)
+                // const lastGroupOpenStorage = localStorage.getItem('lastGroupOpenStorage');
+                // const lastGroupIndex = parseInt(lastGroupOpenStorage, 10);
+                setGroups(response.data)
                 setIsLoading(false);
+                // console.log(lastGroupIndex, groups[lastGroupIndex])
+                // handleGroupTasks(lastGroupIndex)
             } catch (error) {
                 console.log(error.message);
                 setIsLoading(false);
             }
         };
         fetchData();
+
     }, [trigger]);
     useEffect(() => {
         if (tasks.length > 0) {
             handleStatusTasks(tasks);
         }
     }, [tasks]);
+
+    const handleGroupTasks = (groupIndex) => {
+        // console.log(groupIndex)
+        const jsonTasks = JSON.parse(groups[groupIndex].tasks)
+        setCurrectGroup(groups[groupIndex])
+        setTasks(jsonTasks)
+    }
+
     const handleStatusTasks = (tasks) => {
         const tasksToDoTemp = [];
         const tasksInProgressTemp = [];
@@ -67,14 +83,14 @@ const UserHome = () => {
     const handleDragEnd = (results, tasks) => {
         itemOnDrag(false);
         const { source, destination, combine } = results;
-        
+
         if (!destination) return;
         if (
             source.droppableId === destination.droppableId &&
             source.index === destination.index &&
             !combine
         ) return;
-        
+
         if (destination.droppableId === 'deleted') {
             deleteTask(results.draggableId);
         }
@@ -125,53 +141,68 @@ const UserHome = () => {
         updateTasksInDrag(updatedTasks);
     };
     return (
+        <DragDropContext onDragEnd={(results) => handleDragEnd(results, tasks)}>
+
         <div className='container-all'>
-            {tasks.length === 0 && (
+            <BarGroupTasks 
+                handleGroupTasks={handleGroupTasks}
+                groups={groups} 
+                handleTasks={handleTasks}
+                />
+
+            {tasks.length === 0 ? (
                 <div className='container-cards'>
-                    <h3>No tasks to show</h3>
+                    <h3>Select or create a group <br /> of tasks to start! 📚</h3>
                 </div>
-            )}
-                <div className='container-cards'>
-                    <DragDropContext onDragEnd={(results) => handleDragEnd(results, tasks)}>
-                        <Droppable droppableId='toDo' type='group'>
-                            {(provided, snapshot) => (
-                                <TaskCard
-                                    title='To Do'
-                                    tasks={tasksToDo}
-                                    handleTasks={handleTasks}
-                                    provided={provided}
-                                    status='toDo'
-                                    isItemOnDrag={itemOnDrag}
-                                />
-                            )}
-                        </Droppable>
-                        <Droppable droppableId='inProgress' type='group'>
-                            {(provided, snapshot) => (
-                                <TaskCard
-                                    title='In Progress'
-                                    tasks={tasksInProgress}
-                                    handleTasks={handleTasks}
-                                    provided={provided}
-                                    status='inProgress'
-                                    isItemOnDrag={itemOnDrag}
-                                />
-                            )}
-                        </Droppable>
-                        <Droppable droppableId='Completed' type='group'>
-                            {(provided, snapshot) => (
-                                <TaskCard
-                                    title='Completed'
-                                    tasks={tasksCompleted}
-                                    handleTasks={handleTasks}
-                                    provided={provided}
-                                    status='Completed'
-                                    isItemOnDrag={itemOnDrag}
-                                />
-                            )}
-                        </Droppable>
-                        {/* delete drop zone */}
-                        <Droppable droppableId='deleted' type='group' isDropDisabled={Children ? false : true}>
-                            {(provided, snapshot) => (
+            ) :
+                <>
+                    <GroupDetails tasks={tasks} group={currentGroup} />
+                    <div className='container-cards'>
+                            <Droppable droppableId='toDo' type='group'>
+                                {(provided) => (
+                                    <TaskCard
+                                        title='To Do'
+                                        tasks={tasksToDo}
+                                        handleTasks={handleTasks}
+                                        handleGroupTasks={handleGroupTasks}
+                                        provided={provided}
+                                        status='toDo'
+                                        isItemOnDrag={itemOnDrag}
+                                        currentGroup={currentGroup}
+                                    />
+                                )}
+                            </Droppable>
+                            <Droppable droppableId='inProgress' type='group'>
+                                {(provided) => (
+                                    <TaskCard
+                                        title='In Progress'
+                                        tasks={tasksInProgress}
+                                        handleTasks={handleTasks}
+                                        handleGroupTasks={handleGroupTasks}
+                                        provided={provided}
+                                        status='inProgress'
+                                        isItemOnDrag={itemOnDrag}
+                                        currentGroup={currentGroup}
+                                    />
+                                )}
+                            </Droppable>
+                            <Droppable droppableId='Completed' type='group'>
+                                {(provided) => (
+                                    <TaskCard
+                                        title='Completed'
+                                        tasks={tasksCompleted}
+                                        handleTasks={handleTasks}
+                                        handleGroupTasks={handleGroupTasks}
+                                        provided={provided}
+                                        status='Completed'
+                                        isItemOnDrag={itemOnDrag}
+                                        currentGroup={currentGroup}
+                                    />
+                                )}
+                            </Droppable>
+                            {/* delete drop zone */}
+                            <Droppable droppableId='deleted' type='group' isDropDisabled={Children ? false : true}>
+                                {(provided, snapshot) => (
                                     <div className='container-delete-task' ref={provided.innerRef}
                                         style={{
                                             Height: '300px',
@@ -181,14 +212,17 @@ const UserHome = () => {
                                         {isOnDrag && (<DeleteForeverIcon
                                             className='icon-delete-task'
                                             style={{ fontSize: snapshot.isDraggingOver && '3rem' }}
-                                            />)}
+                                        />)}
                                         {provided.placeholder}
                                     </div>
-                            )}
-                        </Droppable>
-                    </DragDropContext>
-                </div>
+                                )}
+                            </Droppable>
+                    </div>
+                </>
+            }
         </div>
+        </DragDropContext>
+
     );
 };
 

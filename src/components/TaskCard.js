@@ -7,7 +7,8 @@ import FormTask from './FormTask';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
-const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag }) => {
+const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag, currentGroup, handleGroupTasks }) => {
+    // console.log(tasks)
     const [formOpen, setFormOpen] = useState(false);
     const open = () => setFormOpen(true);
     const close = () => setFormOpen(false);
@@ -29,11 +30,12 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag })
                             key={formOpen ? 'insertOpen' : 'insertClosed'}
                             handleClose={close}
                             handleTasks={handleTasks}
+                            handleGroupTasks={handleGroupTasks}
                             status={status}
                             title={title}
                             order={tasks}
                             action={'insert'}
-                            // formOpen={formOpen}
+                            currentGroup={currentGroup}
                         />
                     )}
                 </AnimatePresence>

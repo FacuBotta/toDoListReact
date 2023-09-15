@@ -5,7 +5,7 @@ import LogForm from './LogForm';
 import SignForm from './SignForm';
 
 
-const UserForm = ({ handleClose, handleAuth }) => {
+const UserForm = ({ handleClose }) => {
     const [isLogForm, setIsLogForm] = useState(true)
 
     const toggleForm = () => setIsLogForm(!isLogForm);
@@ -44,7 +44,6 @@ const UserForm = ({ handleClose, handleAuth }) => {
                     <LogForm
                         className='log-form'
                         handleClose={handleClose}
-                        handleAuth={handleAuth}
                     /> :
                     <SignForm
                         className='log-form'

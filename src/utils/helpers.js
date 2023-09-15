@@ -37,8 +37,7 @@ export const updateTask = (taskData, priority, description, taskName, handleTask
         console.log(error);
     }
 };
-export const insertNewTask = async (order, status, priority, newDescription, taskName, handleTasks, handleClose) => {
-    // console.log(order.length + 1, status, priority, newDescription, taskName)
+export const insertNewTask = async (order, status, priority, newDescription, taskName, handleTasks, handleClose, currentGroup, handleGroupTasks) => {
     try {
         const response = await axios.post('http://localhost:3001/api/insertTask', {
             status: status,
@@ -46,12 +45,14 @@ export const insertNewTask = async (order, status, priority, newDescription, tas
             newDescription: newDescription,
             taskName: taskName,
             order: order.length + 1,
+            group: currentGroup.id_group,
         }, { withCredentials: true })
     } catch (error) {
         console.log(error)
     }
     handleTasks();
     handleClose();
+    // handleGroupTasks(currentGroup.id_group);
 };
 export const updateTasksInDrag = async (newTasks) => {
     try {
@@ -69,8 +70,37 @@ export const deleteTask = async (task) => {
         { task }, 
         { withCredentials: true });
     } catch (error) {
-        console.log (error)
+        console.log (error);
     }
+}
+export const insertNewGroupTask = async (groupName, handleTasks) => {
+    try {
+        const response = await axios.post('http://localhost:3001/api/insertGroup',
+        { groupName: groupName },
+        { withCredentials: true });
+        console.log(response)
+        handleTasks();
+    } catch (error) {
+        console.log(error);
+    }
+}
+//format dates
+export const handleDates = (date) => {
+    const dateObject = new Date(date);
+    const optionsDate = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    };
+    const optionsTime = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    };
+    const formattedDate = dateObject.toLocaleDateString('en-US', optionsDate);
+    const formattedTime = dateObject.toLocaleTimeString('en-US', optionsTime);
+    const finalFormattedDate = `${formattedDate} at ${formattedTime}hrs`;
+    return finalFormattedDate;
 }
 // first letter tu uppercase
 export const capitalizeFirstLetter = (string) => {

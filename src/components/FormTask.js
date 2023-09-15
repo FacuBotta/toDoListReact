@@ -1,34 +1,17 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion';
 import Backrop from './Backrop';
-import { updateTask, insertNewTask, capitalizeFirstLetter } from '../utils/helpers'
+import { updateTask, insertNewTask, capitalizeFirstLetter, handleDates } from '../utils/helpers'
 
-const FormTask = ({ taskData, handleTasks, handleClose, status, title, order, action }) => {
-    // console.log(taskData, action);
-    const [taskName, setTaskName] = useState(`${action === 'update' ? taskData.task_name : ''}`);
+const FormTask = ({ taskData, handleTasks, handleClose, status, title, order, action, currentGroup, handleGroupTasks }) => {
+    console.log(currentGroup);
+    const [taskName, setTaskName] = useState(`${action === 'update' ? taskData.name : ''}`);
     const [priority, setPriority] = useState(`${action === 'update' ? taskData.priority : 'Medium'}`);
-    const [description, setDescription] = useState(`${action === 'update' ? taskData.description_task : ''}`);
+    const [description, setDescription] = useState(`${action === 'update' ? taskData.description : ''}`);
     const [newDescription, setNewDescription] = useState('');
     const handlePriorityChange = (value) => {
         setPriority(value)
     };
-    const handleDates = (date) => {
-        const dateObject = new Date(date);
-        const optionsDate = {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        };
-        const optionsTime = {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        };
-        const formattedDate = dateObject.toLocaleDateString('en-US', optionsDate);
-        const formattedTime = dateObject.toLocaleTimeString('en-US', optionsTime);
-        const finalFormattedDate = `${formattedDate} at ${formattedTime}hrs`;
-        return finalFormattedDate;
-    }
     const dropIn = {
         hidden: {
             y: '-100vh',
@@ -128,7 +111,7 @@ const FormTask = ({ taskData, handleTasks, handleClose, status, title, order, ac
                 <div className='container-btn'>
                     <button className='add-task-btn'
                         onClick={() => action === 'insert' ?
-                        insertNewTask(order, status, priority, newDescription, taskName, handleTasks, handleClose) :
+                        insertNewTask(order, status, priority, newDescription, taskName, handleTasks, handleClose, currentGroup, handleGroupTasks) :
                         updateTask(taskData, priority, description, taskName, handleTasks, handleClose)}
                     > { action === 'insert' ? 'Add task!' : 'Add changes!' } </button>
                     <button className='close-form-btn' onClick={handleClose}>Close</button>

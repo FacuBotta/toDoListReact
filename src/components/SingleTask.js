@@ -27,7 +27,7 @@ const SingleTask = ({ taskData, handleTasks, provided, snapshot, isItemOnDrag, t
                     }
                 }, [snapshot.isDragging])}
 
-                <h6>{ taskData.task_name }</h6>
+                <h6>{ taskData.name }</h6>
                 <motion.button className='open-task-icon-btn' onClick={() => (taskOpen ? close() : open())}>
                     <KeyboardArrowDownIcon  className='icon-task-open' />
                 </motion.button>

@@ -8,12 +8,14 @@ import UserForm from './UserForm';
 import LoginIcon from '@mui/icons-material/Login';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import HomeIcon from '@mui/icons-material/Home';
-import axios from 'axios';
 import DropMenu from './DropMenu';
 import { capitalizeFirstLetter } from '../utils/helpers';
+import { useAuth } from './AuthContext';
 
-const Navbar = ({ handleAuth, user, isLoged }) => {
-    console.log(user, isLoged)
+const Navbar = ({ isAuth, user }) => {
+
+    const { logout, delUser } = useAuth();
+    // console.log(user, isAuth)
     const navigate = useNavigate();
     const dropMenuRef = useRef();
     const [formOpen, setFormOpen] = useState(false);
@@ -21,41 +23,20 @@ const Navbar = ({ handleAuth, user, isLoged }) => {
     const open = () => setFormOpen(true);
     const close = () => setFormOpen(false);
 
-    const handleLogOut = (e) => {
+    const handleLogOut = async (e) => {
         e.preventDefault();
-        axios.post('http://localhost:3001/api/logOut', null, { withCredentials: true })
-            .then((response) => {
-                console.log(response)
-                if (response.data.logout) {
-                    localStorage.setItem('isAuth', false);
-                    handleAuth(false)
-                    setMenuOpen(false)
-                    navigate('/');
-                } else {
-                    console.log('already log out')
-                }
-            })
-            .catch((error) => {
-                console.log(error)
-            })
+        await logout()
+        setMenuOpen(false)
+        navigate('/Home');
     }
-    const handleDeleteUser = (e) => {
+
+    const handleDeleteUser = async (e) => {
         e.preventDefault()
         const userConfirmed = window.confirm('Are you really sure to want to delete your account?');
         if (userConfirmed) {
-            axios.get('http://localhost:3001/api/deleteUser', {
-                withCredentials: true
-            })
-                .then((response) => {
-                    window.alert(response.data.message)
-                    localStorage.setItem('isAuth', false);
-                    handleAuth(false)
-                    setMenuOpen(false)
-                    navigate('/');
-                })
-                .catch((error) => {
-                    console.log(error)
-                })
+                await delUser();
+                setMenuOpen(false)
+                navigate('/Home');
         } else {
             setMenuOpen(false)
         }
@@ -85,20 +66,21 @@ const Navbar = ({ handleAuth, user, isLoged }) => {
                     <img src={navLogo} />
                 </div>
                 <div className='nav-title'>
-                    {isLoged && user ? (
-                        <h2>Hi {capitalizeFirstLetter(user.userName) + "!"}</h2>
-                    ) : (
-                        <h2>Let's do some tasks!</h2>
+                    {isAuth && user != null ? (
+                        // <h2>Hi {capitalizeFirstLetter(user.userName) + "! 👋"  }</h2>
+                        <h2>Hi {user.userName} ! 👋</h2>
+                        ) : (
+                        <h2>Let's do some tasks! 💪 </h2>
                     )}
                 </div>
                 <div className='nav-links'>
-                    <Link to="/"><HomeIcon /></Link>
-                    {!isLoged ? (
+                    <Link to="/Home"><HomeIcon /></Link>
+                    {!isAuth ? (
                         <motion.button onClick={() => (formOpen ? close() : open())}><LoginIcon /></motion.button>
                     ) : (
                         <>
                             <button className='menu-trigger' onClick={(e) => handleMenu(e)}><AccountBoxIcon /></button>
-                            {menuOpen && <DropMenu ref={dropMenuRef} handleLogOut={handleLogOut} handleDeleteUser={handleDeleteUser} handleMenu={handleMenu} />}
+                            {menuOpen && <DropMenu ref={dropMenuRef} user={user.userName} handleLogOut={handleLogOut} handleDeleteUser={handleDeleteUser} handleMenu={handleMenu} />}
                         </>
                     )}
                     <AnimatePresence
@@ -111,7 +93,7 @@ const Navbar = ({ handleAuth, user, isLoged }) => {
                                 key={formOpen ? 'open' : 'closed'}
                                 formOpen={formOpen}
                                 handleClose={close}
-                                handleAuth={handleAuth}
+                                // handleAuth={handleAuth}
                             />
                         )}
                     </AnimatePresence>

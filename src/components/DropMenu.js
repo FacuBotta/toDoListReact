@@ -1,18 +1,17 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
-
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
-const DropMenu = React.forwardRef(({ handleLogOut, handleDeleteUser, handleMenu}, ref ) => {
+const DropMenu = React.forwardRef(({ handleLogOut, handleDeleteUser, handleMenu, user}, ref ) => {
 
     return (
         <div ref={ref} className='drop-menu'>
             <ul>
                 <li className='item-menu' onClick={(e) => handleMenu(e)}>
                     <FormatListBulletedIcon />
-                    <Link to="/user-home">My tasks</Link>
+                    <Link to={`/Home/${user}`}>My tasks</Link>
                 </li>
                 <li className='item-menu' onClick={(e) => handleLogOut(e)}>
                     <LogoutIcon />

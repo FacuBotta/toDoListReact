@@ -1,30 +1,17 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
-const LogForm = ({ handleAuth, handleClose }) => {
-
-    const navigate = useNavigate();
+const LogForm = ({ handleClose }) => {
+    const { login } = useAuth()
     const [loginUserName, setLoginUserName] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
 
-    
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:3001/api/login', {
-                userName: loginUserName,
-                password: loginPassword,
-            }, { withCredentials: true });
-            handleAuth(true);
-            navigate('/User-home');
-            
+            await login({ loginUserName, loginPassword })
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                window.alert(error.response.data.message)
-            } else {
-                console.error('An error occurred while logging in');
-            }
+            console.error('An error occurred while logging in:', error);
         }
     };
 
