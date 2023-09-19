@@ -3,8 +3,7 @@ import { motion } from 'framer-motion';
 import Backrop from './Backrop';
 import { updateTask, insertNewTask, capitalizeFirstLetter, handleDates } from '../utils/helpers'
 
-const FormTask = ({ taskData, handleTasks, handleClose, status, title, order, action, currentGroup, handleGroupTasks }) => {
-    console.log(currentGroup);
+const FormTask = ({ taskData, handleTasks, handleClose, status, title, order, action, groupId }) => {
     const [taskName, setTaskName] = useState(`${action === 'update' ? taskData.name : ''}`);
     const [priority, setPriority] = useState(`${action === 'update' ? taskData.priority : 'Medium'}`);
     const [description, setDescription] = useState(`${action === 'update' ? taskData.description : ''}`);
@@ -111,8 +110,8 @@ const FormTask = ({ taskData, handleTasks, handleClose, status, title, order, ac
                 <div className='container-btn'>
                     <button className='add-task-btn'
                         onClick={() => action === 'insert' ?
-                        insertNewTask(order, status, priority, newDescription, taskName, handleTasks, handleClose, currentGroup, handleGroupTasks) :
-                        updateTask(taskData, priority, description, taskName, handleTasks, handleClose)}
+                        insertNewTask(order, status, priority, newDescription, taskName, handleTasks, handleClose, groupId) :
+                        updateTask(taskData, priority, description, taskName, handleTasks, handleClose, groupId)}
                     > { action === 'insert' ? 'Add task!' : 'Add changes!' } </button>
                     <button className='close-form-btn' onClick={handleClose}>Close</button>
                 </div>

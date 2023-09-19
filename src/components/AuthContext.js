@@ -17,20 +17,18 @@ export const AuthProvider = ({ children }) => {
 
     //verification auth user status
     useEffect(() => {
-        console.log('user in the context before axios auth:', user)
         axios.get('http://localhost:3001/api/isAuth', { withCredentials: true })
             .then((response) => {
                 if (response.data.auth) {
                     setIsAuth(true);
                     setUser(response.data);
                     localStorage.setItem('isAuth', true);
-                    console.log('user in the context after axios auth:', user)
-                    console.log('user response.data after axios auth:', response.data)
+                    localStorage.setItem('user', response.data);
                 } else {
                     setIsAuth(false);
                     setUser(null);
                     localStorage.setItem('isAuth', false);
-                    console.log('else in auth')
+                    localStorage.setItem('user', null);
                 }
 
             })
@@ -40,8 +38,6 @@ export const AuthProvider = ({ children }) => {
     }, [])
 
     const login = async (credentials) => {
-        console.log('user in the context before axios login:', user)
-
         try {
             const response = await axios.post('http://localhost:3001/api/login', {
                 userName: credentials.loginUserName,
@@ -51,9 +47,6 @@ export const AuthProvider = ({ children }) => {
                 setUser(response.data);
                 setIsAuth(true)
                 navigate(`/Home/${response.data.name}`);
-                console.log('user in the context after axios login:', user)
-                console.log('response.data in the context after axios login:', response.data)
-
             }
         } catch (error) {
             console.log(error);
@@ -66,6 +59,8 @@ export const AuthProvider = ({ children }) => {
             .then((response) => {
                 if (response.data.logout) {
                     localStorage.setItem('isAuth', false);
+                    localStorage.setItem('user', null);
+                    localStorage.setItem('currentGroupStorage', '');
                     setIsAuth(false);
                     setUser(null);
                     console.log('logout maked')
@@ -85,6 +80,8 @@ export const AuthProvider = ({ children }) => {
             .then((response) => {
                 window.alert(response.data.message);
                 localStorage.setItem('isAuth', false);
+                localStorage.setItem('user', null);
+                localStorage.setItem('currentGroupStorage', '');
                 setIsAuth(false);
                 setUser(null);
             })

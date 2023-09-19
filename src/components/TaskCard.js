@@ -7,14 +7,17 @@ import FormTask from './FormTask';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
-const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag, currentGroup, handleGroupTasks }) => {
-    // console.log(tasks)
+const TaskCard = ({ title, tasks, handleTasks, provided, status, groupId, handleGroupTasks }) => {
     const [formOpen, setFormOpen] = useState(false);
     const open = () => setFormOpen(true);
     const close = () => setFormOpen(false);
 
     return (
-        <div className='task-card' ref={provided.innerRef} {...provided.droppableProps}>
+        <div
+            className='task-card'
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+        >
             <div className='task-card-head'>
                 <h4>{title}</h4>
                 <motion.button className='add-new-task-btn' onClick={() => (formOpen ? close() : open())}>
@@ -35,13 +38,17 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag, c
                             title={title}
                             order={tasks}
                             action={'insert'}
-                            currentGroup={currentGroup}
+                            groupId={groupId}
                         />
                     )}
                 </AnimatePresence>
             </div>
             {tasks.map((task, index) => (
-                <Draggable draggableId={`${task.id_task}`} key={task.id_task} index={index}>
+                <Draggable
+                    draggableId={`${task.id_task}`}
+                    key={task.id_task}
+                    index={index}
+                >
                     {(provided, snapshot) => (
                         <SingleTask
                             key={index}
@@ -49,9 +56,8 @@ const TaskCard = ({ title, tasks, handleTasks, provided, status, isItemOnDrag, c
                             snapshot={snapshot}
                             taskData={task}
                             handleTasks={handleTasks}
-                            isItemOnDrag={isItemOnDrag}
                             title={title}
-
+                            groupId={groupId}
                         />
                     )}
                 </Draggable>

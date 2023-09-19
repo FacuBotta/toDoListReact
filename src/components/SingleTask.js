@@ -3,7 +3,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { motion, AnimatePresence } from 'framer-motion';
 import FormTask from './FormTask';
 
-const SingleTask = ({ taskData, handleTasks, provided, snapshot, isItemOnDrag, title }) => {
+const SingleTask = ({ taskData, handleTasks, provided, snapshot, title, groupId }) => {
     const [taskOpen, setTaskOpen] = useState(false);
     const open = () => setTaskOpen(true);
     const close = () => setTaskOpen(false);
@@ -21,12 +21,6 @@ const SingleTask = ({ taskData, handleTasks, provided, snapshot, isItemOnDrag, t
                 }}
                 id='task-item'
             >
-                {useEffect(() => {
-                    if (snapshot.isDragging) {
-                        isItemOnDrag(true);
-                    }
-                }, [snapshot.isDragging])}
-
                 <h6>{ taskData.name }</h6>
                 <motion.button className='open-task-icon-btn' onClick={() => (taskOpen ? close() : open())}>
                     <KeyboardArrowDownIcon  className='icon-task-open' />
@@ -47,7 +41,7 @@ const SingleTask = ({ taskData, handleTasks, provided, snapshot, isItemOnDrag, t
                         handleTasks={handleTasks}
                         action={'update'}
                         title={title}
-                        // taskOpen={taskOpen}
+                        groupId={groupId}
                     />
                 )}
             </AnimatePresence>

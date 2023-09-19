@@ -4,36 +4,38 @@ import axios from 'axios';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import TaskCard from '../components/TaskCard'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
-import { updateTasksInDrag, deleteTask } from '../utils/helpers'
+import { updateTasksInDrag, deleteTask, deleteGroupTask, handleDates } from '../utils/helpers'
 import BarGroupTasks from '../components/BarGroupTasks';
 import GroupDetails from '../components/GroupDetails';
 
 const UserHome = () => {
+    const courrentGroupStorage = () => {
+        const indexString = localStorage.getItem('currentGroupStorage')
+        if (indexString != '' && indexString) {
+            setCurrectGroup(parseInt(indexString));
+        } else {
+            setCurrectGroup(0);
+        }
+    };
+
+    const [currentGroup, setCurrectGroup] = useState(0);
     const [groups, setGroups] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [trigger, setTrigger] = useState(false)
-    const [tasksToDo, setTasksToDo] = useState([]);
-    const [tasksInProgress, setTasksInProgress] = useState([]);
-    const [tasksCompleted, setTasksCompleted] = useState([]);
     const [isOnDrag, setIsOnDrag] = useState(false);
-    const [currentGroup, setCurrectGroup] = useState([]);
-    
-    const itemOnDrag = (value) => setIsOnDrag(value);
+
     const handleTasks = () => {
         setTrigger(!trigger);
     };
+
     useEffect(() => {
         const fetchData = async () => {
+            courrentGroupStorage()
             try {
                 const response = await axios.post('http://localhost:3001/api/getUser', null, { withCredentials: true });
-                // console.log(response.data);
-                // const lastGroupOpenStorage = localStorage.getItem('lastGroupOpenStorage');
-                // const lastGroupIndex = parseInt(lastGroupOpenStorage, 10);
-                setGroups(response.data)
+                handleData(response.data)
                 setIsLoading(false);
-                // console.log(lastGroupIndex, groups[lastGroupIndex])
-                // handleGroupTasks(lastGroupIndex)
             } catch (error) {
                 console.log(error.message);
                 setIsLoading(false);
@@ -42,48 +44,44 @@ const UserHome = () => {
         fetchData();
 
     }, [trigger]);
-    useEffect(() => {
-        if (tasks.length > 0) {
-            handleStatusTasks(tasks);
-        }
-    }, [tasks]);
 
-    const handleGroupTasks = (groupIndex) => {
-        // console.log(groupIndex)
-        const jsonTasks = JSON.parse(groups[groupIndex].tasks)
-        setCurrectGroup(groups[groupIndex])
-        setTasks(jsonTasks)
+    const handleData = (data) => {
+        const procecedGroups = data.map(group => {
+            const groupTasks = JSON.parse(group.tasks)
+            const tasksToDo = [];
+            const tasksInProgress = [];
+            const tasksCompleted = [];
+            groupTasks.forEach((task) => {
+                if (task.status === 'toDo') {
+                    tasksToDo.push(task);
+                } else if (task.status === 'inProgress') {
+                    tasksInProgress.push(task);
+                } else if (task.status === 'Completed') {
+                    tasksCompleted.push(task);
+                }
+            });
+            return ({
+                id: group.id_group,
+                name: group.group_name,
+                created_at: group.created_at,
+                updated_at: group.updated_at,
+                tasks: groupTasks,
+                tasksToDo: tasksToDo.sort((taskA, taskB) => taskA.order_task - taskB.order_task),
+                tasksInProgress: tasksInProgress.sort((taskA, taskB) => taskA.order_task - taskB.order_task),
+                tasksCompleted: tasksCompleted.sort((taskA, taskB) => taskA.order_task - taskB.order_task)
+            })
+
+        })
+        setGroups(procecedGroups);
     }
 
-    const handleStatusTasks = (tasks) => {
-        const tasksToDoTemp = [];
-        const tasksInProgressTemp = [];
-        const tasksCompletedTemp = [];
-        tasks.forEach((task) => {
-            if (task.status === 'toDo') {
-                tasksToDoTemp.push(task);
-            } else if (task.status === 'inProgress') {
-                tasksInProgressTemp.push(task);
-            } else if (task.status === 'Completed') {
-                tasksCompletedTemp.push(task);
-            }
-        });
-        //order tasks by order_task column
-        tasksToDoTemp.sort((taskA, taskB) => taskA.order_task - taskB.order_task);
-        tasksInProgressTemp.sort((taskA, taskB) => taskA.order_task - taskB.order_task);
-        tasksCompletedTemp.sort((taskA, taskB) => taskA.order_task - taskB.order_task);
-
-        setTasksToDo(tasksToDoTemp);
-        setTasksInProgress(tasksInProgressTemp);
-        setTasksCompleted(tasksCompletedTemp);
-    };
     if (isLoading) {
         return <p>Cargando...</p>;
     }
-    const handleDragEnd = (results, tasks) => {
-        itemOnDrag(false);
-        const { source, destination, combine } = results;
 
+    const handleDragEnd = (results) => {
+        setIsOnDrag(false);
+        const { source, destination, combine } = results;
         if (!destination) return;
         if (
             source.droppableId === destination.droppableId &&
@@ -92,83 +90,96 @@ const UserHome = () => {
         ) return;
 
         if (destination.droppableId === 'deleted') {
-            deleteTask(results.draggableId);
-        }
-        const taskDragged = results.draggableId;
-        const oldStatus = source.droppableId;
-        const newStatus = destination.droppableId;
-        const newOrder = destination.index;
-        const sourceIndex = source.index;
-
-        let updatedTasks = tasks.map((task) => {
-            if (task.id_task == taskDragged) {
-                if (oldStatus !== newStatus) {
-                    return {
-                        ...task,
-                        status: newStatus,
-                        order_task: newOrder,
-                    };
-                } else {
-                    return {
-                        ...task,
-                        order_task: newOrder,
-                    };
-                }
+            if (source.droppableId === 'containerGroupsTasks') {
+                localStorage.setItem('currentGroupStorage', 0);
+                deleteGroupTask(results.draggableId, handleTasks);
+                return;
             } else {
-                return task;
+                deleteTask(results.draggableId, groups[currentGroup].id, handleTasks);
+                return;
             }
-        });
+        }
+        
+        if (source.droppableId != 'containerGroupsTasks') {
+            let tasks = groups[currentGroup].tasks
 
-        if (oldStatus === newStatus) {
-            updatedTasks = updatedTasks.map((task) => {
-                if (task.id_task !== taskDragged && task.status === newStatus) {
-                    if (task.order_task >= newOrder) {
+            const taskDragged = results.draggableId;
+            const oldStatus = source.droppableId;
+            const newStatus = destination.droppableId;
+            const newOrder = destination.index;
+
+            let updatedTasks = tasks.map((task) => {
+                if (task.id_task == taskDragged) {
+                    if (oldStatus !== newStatus) {
                         return {
                             ...task,
-                            order_task: task.order_task + 1,
+                            status: newStatus,
+                            order_task: newOrder,
                         };
                     } else {
-                        return task;
+                        return {
+                            ...task,
+                            order_task: newOrder,
+                        };
                     }
                 } else {
                     return task;
                 }
             });
-        }
 
-        setTasks(updatedTasks);
-        handleStatusTasks(updatedTasks);
-        updateTasksInDrag(updatedTasks);
+            if (oldStatus === newStatus) {
+                updatedTasks = updatedTasks.map((task) => {
+                    if (task.id_task !== taskDragged && task.status === newStatus) {
+                        if (task.order_task >= newOrder) {
+                            return {
+                                ...task,
+                                order_task: task.order_task + 1,
+                            };
+                        } else {
+                            return task;
+                        }
+                    } else {
+                        return task;
+                    }
+                });
+            }
+            updateTasksInDrag(updatedTasks, groups[currentGroup].id, handleTasks);
+        }
     };
     return (
-        <DragDropContext onDragEnd={(results) => handleDragEnd(results, tasks)}>
+        <DragDropContext
+            onDragEnd={(results) => handleDragEnd(results, tasks)}
+            onDragStart={() => setIsOnDrag(true)}
+        >
+            <div className='container-all'>
+                {<Droppable droppableId="containerGroupsTasks" type='group' >
+                    {(provided) => (
+                        <BarGroupTasks
+                            provided={provided}
+                            currentGroup={currentGroup}
+                            groups={groups}
+                            handleTasks={handleTasks}
+                        />
+                    )}
+                </Droppable>}
 
-        <div className='container-all'>
-            <BarGroupTasks 
-                handleGroupTasks={handleGroupTasks}
-                groups={groups} 
-                handleTasks={handleTasks}
-                />
-
-            {tasks.length === 0 ? (
-                <div className='container-cards'>
-                    <h3>Select or create a group <br /> of tasks to start! 📚</h3>
-                </div>
-            ) :
-                <>
-                    <GroupDetails tasks={tasks} group={currentGroup} />
+                {groups.length === 0 ? (
                     <div className='container-cards'>
+                        <h3>Select or create a group <br /> of tasks to start! 📚</h3>
+                    </div>
+                ) :
+                    <>
+                        <GroupDetails group={groups[currentGroup]} />
+                        <div className='container-cards'>
                             <Droppable droppableId='toDo' type='group'>
                                 {(provided) => (
                                     <TaskCard
                                         title='To Do'
-                                        tasks={tasksToDo}
+                                        tasks={groups[currentGroup].tasksToDo}
                                         handleTasks={handleTasks}
-                                        handleGroupTasks={handleGroupTasks}
                                         provided={provided}
                                         status='toDo'
-                                        isItemOnDrag={itemOnDrag}
-                                        currentGroup={currentGroup}
+                                        groupId={groups[currentGroup].id}
                                     />
                                 )}
                             </Droppable>
@@ -176,13 +187,11 @@ const UserHome = () => {
                                 {(provided) => (
                                     <TaskCard
                                         title='In Progress'
-                                        tasks={tasksInProgress}
+                                        tasks={groups[currentGroup].tasksInProgress}
                                         handleTasks={handleTasks}
-                                        handleGroupTasks={handleGroupTasks}
                                         provided={provided}
                                         status='inProgress'
-                                        isItemOnDrag={itemOnDrag}
-                                        currentGroup={currentGroup}
+                                        groupId={groups[currentGroup].id}
                                     />
                                 )}
                             </Droppable>
@@ -190,13 +199,11 @@ const UserHome = () => {
                                 {(provided) => (
                                     <TaskCard
                                         title='Completed'
-                                        tasks={tasksCompleted}
+                                        tasks={groups[currentGroup].tasksCompleted}
                                         handleTasks={handleTasks}
-                                        handleGroupTasks={handleGroupTasks}
                                         provided={provided}
                                         status='Completed'
-                                        isItemOnDrag={itemOnDrag}
-                                        currentGroup={currentGroup}
+                                        groupId={groups[currentGroup].id}
                                     />
                                 )}
                             </Droppable>
@@ -217,10 +224,10 @@ const UserHome = () => {
                                     </div>
                                 )}
                             </Droppable>
-                    </div>
-                </>
-            }
-        </div>
+                        </div>
+                    </>
+                }
+            </div>
         </DragDropContext>
 
     );

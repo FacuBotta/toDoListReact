@@ -111,12 +111,9 @@ app.post('/api/getUser', async (req, res) => {
             return res.status(401).json({ error: 'Unauthorized' });
         }
         const idUser = req.userId;
-        // const sqlSelectedUser = `SELECT * FROM tasks t WHERE t.id_user = ?`;
-        /* const sqlSelectedUser = `SELECT t.id_task, t.status, t.priority, t.id_user, t.id_group, g.group_name, t.description_task, \
-        t.task_name, t.order_task, t.created_at, t.updated_at FROM tasks t INNER JOIN grouptask g ON t.id_user = ?`; */
         const sqlSelectedUser = `SELECT g.id_group, g.group_name, g.created_at, g.updated_at, \
             JSON_ARRAYAGG(JSON_OBJECT('id_task', t.id_task, 'status', t.status, 'priority', t.priority, \ 
-            'name', t.task_name, 'description', t.description_task, 'order', t.order_task, 'created_at', \ 
+            'name', t.task_name, 'description', t.description_task, 'order_task', t.order_task, 'created_at', \ 
             t.created_at, 'updated_at', t.updated_at, 'id_user', t.id_user, 'id_group', t.id_group)) AS tasks \
             FROM grouptask g \
             LEFT JOIN tasks t \
@@ -133,16 +130,17 @@ app.post('/api/getUser', async (req, res) => {
         }
     });
 });
+
 app.post('/api/insertTask', (req, res) => {
     validatedToken(req, res, () => {
         if (!req.authenticated) {
             return res.status(401).json({ error: 'Unauthorized' })
         }
-        const { status, priority, newDescription, taskName, order, group } = req.body;
+        const { status, priority, newDescription, taskName, order, groupId } = req.body;
         const idUser = req.userId;
         const insertTask = 'INSERT INTO tasks (status, priority, id_user, id_group, description_task, task_name, order_task) VALUES (?, ?, ?, ?, ?, ?, ?)';
         try {
-            const result = dbQuery(insertTask, [status, priority, idUser, group, newDescription, taskName, order]);
+            const result = dbQuery(insertTask, [status, priority, idUser, groupId, newDescription, taskName, order]);
             res.send(result);
         } catch (error) {
             console.log(error);
@@ -163,14 +161,35 @@ app.post('/api/insertGroup', (req, res) => {
             res.send(result);
         } catch (error) {
             console.log(error);
-            res.status(500).send({ error: 'Error adding group, try again' });          
+            res.status(500).send({ error: 'Error adding group, try again' });
         }
     })
 });
+app.post('/api/deleteGroupTasks', (req, res) => {
+    try {
+        validatedToken(req, res, async () => {
+            if (!req.authenticated) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
+            const { groupId } = req.body;
+            const idUser = req.userId;
+
+            const deleteTasksQuery = `DELETE FROM tasks WHERE id_group = ? AND id_user = ?`;
+            await dbQuery(deleteTasksQuery, [idUser, groupId]);
+
+            const deleteGroupQuery = `DELETE FROM grouptask WHERE id_group = ? AND id_user = ?`;
+            await dbQuery(deleteGroupQuery, [groupId, idUser]);
+
+            res.status(200).json({ message: 'Group and tasks deleted' });
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while deleting group and tasks' });
+    }
+})
 
 app.post('/api/updateTaskDrag', async (req, res) => {
-    const { tasks } = req.body;
-    const updateTask = `UPDATE tasks t SET status = ?, order_task = ? WHERE id_user = ? AND id_task = ?`;
+    const { tasks, groupId } = req.body;
+    const updateTask = `UPDATE tasks t SET status = ?, order_task = ? WHERE id_user = ? AND id_task = ? AND id_group = ?`;
     try {
         for (const task of tasks) {
             const result = await dbQuery(updateTask, [
@@ -178,6 +197,7 @@ app.post('/api/updateTaskDrag', async (req, res) => {
                 task.order_task,
                 task.id_user,
                 task.id_task,
+                groupId,
             ]);
         }
         res.send({ message: 'Tasks updates!' });
@@ -187,34 +207,51 @@ app.post('/api/updateTaskDrag', async (req, res) => {
     }
 });
 app.post('/api/updateTask', async (req, res) => {
-    const { priority, description, taskName, idUser, idTask } = req.body;
+    const { priority, description, taskName, idUser, idTask, groupId } = req.body;
     const updateTask = `UPDATE tasks t SET priority = ?, description_task = ?, task_name = ? \
-        WHERE id_user = ? && id_task = ?`;
+        WHERE id_user = ? AND id_task = ? AND id_group = ?`;
     try {
-        const result = await dbQuery(updateTask, [priority, description, taskName, idUser, idTask]);
+        const result = await dbQuery(updateTask, [priority, description, taskName, idUser, idTask, groupId]);
         res.send(result);
     } catch (error) {
         console.log(error);
-        res.status(500).send({ error: 'Error updating task, try again' });
+        res.status(500).send({ error: 'Error deleting task, try again' });
     }
 });
-app.post('/api/deleteTask', (req, res) => {
-    const { task } = req.body;
+/* app.post('/api/deleteTask', (req, res) => {
+    const { task, groupId } = req.body;
     validatedToken(req, res, () => {
         if (!req.authenticated) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
-        const deleteTask = `DELETE FROM tasks WHERE id_task = ? AND id_user = ?`
+        const deleteTask = `DELETE FROM tasks WHERE id_task = ? AND id_user = ? AND id_group = ?`
         const idUser = req.userId;
         try {
-            const result = dbQuery(deleteTask, [task, idUser]);
+            const result = dbQuery(deleteTask, [task, idUser, groupId]);
             res.send(result)
         } catch (error) {
             console.log(error);
             res.status(500).send({ error: 'Error deleting task, try again' });
         }
     })
-})
+}) */
+app.post('/api/deleteTask', async (req, res) => {
+    const { task, groupId } = req.body;
+    validatedToken(req, res, async () => {
+        if (!req.authenticated) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const deleteTask = `DELETE FROM tasks WHERE id_task = ? AND id_user = ? AND id_group = ?`;
+        const idUser = req.userId;
+        try {
+            const result = await dbQuery(deleteTask, [task, idUser, groupId]);
+            res.send(result);
+        } catch (error) {
+            console.log(error);
+            res.status(500).send({ error: 'Error deleting task, try again' });
+        }
+    });
+});
 app.post('/api/signup', async (req, res) => {
     const { userName, password, passwordConfirm, userEmail } = req.body;
     if (password !== passwordConfirm) {
@@ -245,14 +282,16 @@ app.get('/api/deleteUser', (req, res) => {
     try {
         validatedToken(req, res, async () => {
             if (!req.authenticated) {
-                return res.status(401).json({ error: 'Unauthorized' });
+                return res.status(401).json({ error: 'Unauthorized', message: 'Login to continue' });
             }
             const idUser = req.userId;
-            // Antes de eliminar al usuario, elimina las tareas asociadas
+
             const deleteTasksQuery = `DELETE FROM tasks WHERE id_user = ?`;
             await dbQuery(deleteTasksQuery, idUser);
 
-            // Después de eliminar las tareas, elimina al usuario
+            const deleteGroupQuery = `DELETE FROM grouptask WHERE id_user = ?`;
+            await dbQuery(deleteGroupQuery, idUser);
+
             const deleteUserQuery = `DELETE FROM users WHERE id_user = ?`;
             await dbQuery(deleteUserQuery, idUser);
 

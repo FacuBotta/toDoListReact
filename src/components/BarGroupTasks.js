@@ -2,10 +2,11 @@ import { React, useEffect, useState, useRef } from 'react'
 import { insertNewGroupTask, capitalizeFirstLetter } from '../utils/helpers'
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import { Draggable } from 'react-beautiful-dnd';
 
-
-const BarGroupTasks = ({ groups, handleGroupTasks, handleTasks }) => {
-    const [activeGroupIndex, setActiveGroupIndex] = useState(null);
+const BarGroupTasks = ({ groups, currentGroup, handleTasks, provided }) => {
+    // console.log(groups[currentGroup].id)
+    const [activeGroupIndex, setActiveGroupIndex] = useState(currentGroup);
     const [groupName, setGroupName] = useState('');
     const [isCarrousel, setIsCarousel] = useState(false);
     const sliderRef = useRef(null);
@@ -36,13 +37,18 @@ const BarGroupTasks = ({ groups, handleGroupTasks, handleTasks }) => {
         }
     }
 
-    const handleInsertGroup = () => {
-        insertNewGroupTask(groupName, handleTasks)
-        setGroupName('')
+    const handleInsertGroup = (e) => {
+        e.preventDefault();
+        insertNewGroupTask(groupName, handleTasks);
+        setGroupName('');
     }
 
     return (
-        <div className="bar-group-tasks">
+        <div
+            className="bar-group-tasks"
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+        >
             {/* slider of groupsTasks */}
             <div ref={sliderRef} className='container-slider-groups'>
                 {isCarrousel && (
@@ -55,17 +61,31 @@ const BarGroupTasks = ({ groups, handleGroupTasks, handleTasks }) => {
                         <p>No groups to show</p>
                     ) : (
                         groups.map((group, index) => (
-                            <div
-                                onClick={() => {
-                                    localStorage.setItem('lastGroupOpenStorage', index);
-                                    setActiveGroupIndex(index);
-                                    handleGroupTasks(index);
-                                }}
-                                key={group.id_group}
-                                className={activeGroupIndex === index ? 'group-tasks-item isActive' : 'group-tasks-item'}
+                            <Draggable
+                                draggableId={`${group.id}`}
+                                key={index}
+                                index={index}
                             >
-                                <p id={group.id_group}>{group.group_name}</p>
-                            </div>
+                                {(provided, snapshot) => (
+                                    <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        style={{
+                                            border: snapshot.isDragging ? ' 1px solid #0dff92' : 'none',
+                                            ...provided.draggableProps.style
+                                        }}
+                                        onClick={() => {
+                                            localStorage.setItem('currentGroupStorage', index);
+                                            setActiveGroupIndex(index);
+                                            handleTasks()
+                                        }}
+                                        className={activeGroupIndex === index ? 'group-tasks-item isActive' : 'group-tasks-item'}
+                                    >
+                                        <p id={group.id}>{group.name}</p>
+                                    </div>
+                                )}
+                            </Draggable>
                         ))
                     )}
                 </div>
@@ -82,15 +102,16 @@ const BarGroupTasks = ({ groups, handleGroupTasks, handleTasks }) => {
                     onChange={(e) => setGroupName(capitalizeFirstLetter(e.target.value))}
                 />
                 <button
-                    onClick={() =>
+                    onClick={(e) =>
                         groupName !== ''
-                            ? handleInsertGroup()
+                            ? handleInsertGroup(e)
                             : window.alert("Group name can't be null")
                     }
                 >
                     Create Group
                 </button>
             </div>
+            {provided.placeholder}
         </div>
     );
 };
