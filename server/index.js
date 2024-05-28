@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config({ path: '../.env' });
 
 const app = express();
-const port = process.env.SERVER_PORT || 3002;
+const port = process.env.SERVER_PORT || 3001;
 const dbOptions = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
